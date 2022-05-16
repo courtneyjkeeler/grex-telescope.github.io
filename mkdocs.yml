@@ -1,3 +1,7 @@
 site_name: GReX Telescope
+site_url: https://grex-telescope.github.io
 theme:
   name: material
+nav:
+  - Home: index.md
+  - About: about.md
