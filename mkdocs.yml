@@ -20,6 +20,7 @@ nav:
   - Software:
       - "Overview": software/overview.md
       - "SNAP": software/snap.md
+      - "Guix": software/guix.md
       - "Pipeline": software/pipeline.md
   - About: about.md
 markdown_extensions:
