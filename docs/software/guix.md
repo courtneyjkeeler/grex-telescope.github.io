@@ -1,9 +1,9 @@
 # Pipeline Modules and Guix
 
 [Guix](https://guix.gnu.org/) is a functional package manager and tool to
-instantiate and manage Unnix-like operating systems. By functional, Guix defines
+instantiate and manage Unix-like operating systems. By functional, Guix defines
 packages through a purely functional deployment model in which every build is
-deterministic and is a pure function of the pacakge's "inputs" or dependenices.
+deterministic and is a pure function of the package's "inputs" or dependencies.
 This solves the problem of [dependency
 hell](https://en.wikipedia.org/wiki/Dependency_hell) and reproducability.
 
