@@ -14,14 +14,17 @@ nav:
       - "Overview": hardware/overview.md
       - "Feed Antenna": hardware/feed.md
       - "Fronend Module": hardware/fem.md
-      - "Digital Frontend": hardware/fpga.md
+      - "Digital Backend": hardware/fpga.md
       - "The Box": hardware/box.md
       - "Assembly Guide": hardware/assembly.md
   - Software:
       - "Overview": software/overview.md
+      - "SNAP": software/snap.md
       - "Pipeline": software/pipeline.md
   - About: about.md
 markdown_extensions:
+  - admonition
+  - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
