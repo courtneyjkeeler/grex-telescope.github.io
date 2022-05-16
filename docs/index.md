@@ -1,1 +1,1 @@
-# Galactic Radio Explorer - Documentation
+# The Galactic Radio Explorer Telescope

@@ -2,6 +2,28 @@ site_name: GReX Telescope
 site_url: https://grex-telescope.github.io
 theme:
   name: material
+  logo: assets/grex_icon.svg
+  favicon: assets/grex_icon.svg
+  features:
+    - header.autohide
+    - navigation.instant
+    - navigation.tabs
 nav:
   - Home: index.md
+  - Hardware:
+      - "Overview": hardware/overview.md
+      - "Feed Antenna": hardware/feed.md
+      - "Fronend Module": hardware/fem.md
+      - "Digital Frontend": hardware/fpga.md
+      - "The Box": hardware/box.md
+      - "Assembly Guide": hardware/assembly.md
+  - Software:
+      - "Overview": software/overview.md
+      - "Pipeline": software/pipeline.md
   - About: about.md
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
