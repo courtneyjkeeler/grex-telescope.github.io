@@ -21,3 +21,23 @@ flowchart TD
     B -->|PSRDADA| C[Heimdall]
     C -->|"?"| D["?"]
 ```
+
+## Software Manifesto
+
+To limit downtime and maximize reproducability, we will try to adopt a consistent software development strategy. Primarily:
+
+* Builds will be deterministic and reproducible
+* Code will be version controlled, organized, and public
+
+### Language Specific
+
+#### C++
+
+* Code will be formatted with clang-format's LLVM style
+* Try to minimize (solve) all errors from -Wall
+
+#### Python
+
+* Code will be formatted with Black
+* Gradual typing will be used (PEP 438) and checked with mypy or equivalent
+* Environments will have pinned dependencies (reproducible)
