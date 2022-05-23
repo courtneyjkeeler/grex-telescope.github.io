@@ -95,7 +95,8 @@ hash guix  # This is necessary to ensure the updated profile path is active!
 Then initialize the system with
 
 ```bash
-guix system -L guix-grex init guix-grex/system/grex-01.scm /mnt
+cd guix-grex
+guix system -L . init system/grex-01.scm /mnt
 ```
 
 ### Initial System Setup

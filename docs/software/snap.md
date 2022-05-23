@@ -13,3 +13,15 @@ documented, so we'll try to make it as painless as possible here.
 TODO! Where do we get the magic image? Do we have to configure it?
 
 ## Bringup
+
+TODO Cleanup This
+
+katcp=0.5.4
+corr=0.7.3
+construct=2.5.0
+
+```python
+from corr import katcp_wrapper
+f = katcp_wrapper.FpgaClient('10.10.1.3')
+f.listbof()
+```
