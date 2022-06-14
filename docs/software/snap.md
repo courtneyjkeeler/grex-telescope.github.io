@@ -18,7 +18,26 @@ KATCP server on the Pi known as
 [tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). [KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
 is a monitor and control protocol developed by the folks at SARAO that purports easy usage and extension. [Here](https://casper.astro.berkeley.edu/wiki/KATCP) is the list of commands they've added, which has not been updated since 2012.
 
-TODO! Where do we get the magic image? Do we have to configure it?
+### Pi Networking
+
+The image for the rasperry pi comes from
+[here](https://casper.astro.berkeley.edu/wiki/SNAP_Bringup#Configuring_a_SNAP_Raspberry_Pi).
+Once this image is provisioned, you need to setup static networking as it will
+_not_ get a DHCP address from the server. To do this, hook up the newly
+provisioned pi to a keyboard and monitor (or to a network with DHCP, find it's
+address, and SSH) and edit `/etc/dhcpcd.conf` to have
+
+```
+interface eth0
+static ip_address=10.10.1.3/24
+static routers=10.10.1.1
+```
+
+Then,
+
+```bash
+sudo systemctl restart dhcpcd
+```
 
 ### KATCP Networking
 
