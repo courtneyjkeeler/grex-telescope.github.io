@@ -11,7 +11,7 @@ documented, so we'll try to make it as painless as possible here.
 ## KATCP and the Raspberry Pi
 
 The SNAP board itself has no nonvolatile memory, so every time it is
-power-cycled, it must be reconfigured. 
+power-cycled, it must be reconfigured.
 Rather than require the user to bring along (and know how to use) a JTAG programmer, the folks at CASPER
 have added a Raspsberry Pi header such that the GPIO from a Pi can bit-bang JTAG. To expose this functionality
 from remote devices, saving you the trouble from SSHing, they've implemented a
@@ -32,6 +32,7 @@ address, and SSH) and edit `/etc/dhcpcd.conf` to have
 interface eth0
 static ip_address=10.10.1.3/24
 static routers=10.10.1.1
+static domain_name_servers=10.10.1.1 1.1.1.1
 ```
 
 Then,
