@@ -16,7 +16,9 @@ Rather than require the user to bring along (and know how to use) a JTAG program
 have added a Raspsberry Pi header such that the GPIO from a Pi can bit-bang JTAG. To expose this functionality
 from remote devices, saving you the trouble from SSHing, they've implemented a
 KATCP server on the Pi known as
-[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). [KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
+[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). The
+current source of tcpborphserver is
+[here](https://github.com/casper-astro/katcp_devel/tree/rpi-devel-casperfpga). [KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
 is a monitor and control protocol developed by the folks at SARAO that purports easy usage and extension. [Here](https://casper.astro.berkeley.edu/wiki/KATCP) is the list of commands they've added, which has not been updated since 2012.
 
 ### Pi Networking
