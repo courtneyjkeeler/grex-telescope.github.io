@@ -19,6 +19,7 @@ nav:
       - "Assembly Guide": hardware/assembly.md
   - Software:
       - "Overview": software/overview.md
+      - "Gateware": software/gateware.md
       - "SNAP": software/snap.md
       - "Guix": software/guix.md
       - "Pipeline": software/pipeline.md
