@@ -12,36 +12,32 @@ documented, so we'll try to make it as painless as possible here.
 
 The SNAP board itself has no nonvolatile memory, so every time it is
 power-cycled, it must be reconfigured.
-Rather than require the user to bring along (and know how to use) a JTAG programmer, the folks at CASPER
-have added a Raspsberry Pi header such that the GPIO from a Pi can bit-bang JTAG. To expose this functionality
-from remote devices, saving you the trouble from SSHing, they've implemented a
-KATCP server on the Pi known as
-[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). The
-current source of tcpborphserver is
-[here](https://github.com/casper-astro/katcp_devel/tree/rpi-devel-casperfpga). [KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
-is a monitor and control protocol developed by the folks at SARAO that purports easy usage and extension. [Here](https://casper.astro.berkeley.edu/wiki/KATCP) is the list of commands they've added, which has not been updated since 2012.
+Rather than require the user to bring along (and know how to use) a JTAG
+programmer, the folks at CASPER have added a Raspsberry Pi header such that the
+GPIO from a Pi can bit-bang JTAG. To expose this functionality from remote
+devices, saving you the trouble from SSHing, they've implemented a KATCP
+server on the Pi known as
+[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). 
+The current source of tcpborphserver is
+[here](https://github.com/casper-astro/katcp_devel/tree/rpi-devel-casperfpga).
+[KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
+is a monitor and control protocol developed by the folks at SARAO that purports
+easy usage and extension. [Here](https://casper.astro.berkeley.edu/wiki/KATCP)
+is the list of commands they've added, which has not been updated since 2012.
 
-### Pi Networking
+### Raspberry Pi Setup
 
 The image for the rasperry pi comes from
 [here](https://casper.astro.berkeley.edu/wiki/SNAP_Bringup#Configuring_a_SNAP_Raspberry_Pi).
-Once this image is provisioned, you need to setup static networking as it will
-_not_ get a DHCP address from the server. To do this, hook up the newly
-provisioned pi to a keyboard and monitor (or to a network with DHCP, find it's
-address, and SSH) and edit `/etc/dhcpcd.conf` to have
+As GReX uses the RPi Model 3, grab that image and unzip it. You'll need at least
+a 16 GB SD card to write it to. For some reason it has a few more bytes past a
+standard SD card, so use something like
+[PiShrink](https://github.com/Drewsif/PiShrink) to resize the image to its bare
+minimum, then `dd` that, and hopefully it'll resize on boot.
 
-```
-interface eth0
-static ip_address=10.10.1.3/24
-static routers=10.10.1.1
-static domain_name_servers=10.10.1.1 1.1.1.1
-```
-
-Then,
-
-```bash
-sudo systemctl restart dhcpcd
-```
+By default, this image sets up static networking on `192.168.0.2\24`, so the
+machine its hooked up to has to talk on that same subnet. This should already be
+done on guix-provisioned GReX machines.
 
 ### KATCP Networking
 
