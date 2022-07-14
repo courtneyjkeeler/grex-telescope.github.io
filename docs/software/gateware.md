@@ -18,6 +18,4 @@ the software on Arch Linux with:
 
 Both of these were installed directly with their installers, as these old
 versions don't work with the current AUR helpers (it also takes hundreds of
-GB of HDD space and hours of installation). I had to tell MATLAB to _not_ use
-their included version of libfreetype by following [this
-guide](https://www.programmersought.com/article/56335887472/).
+GB of HDD space and hours of installation).

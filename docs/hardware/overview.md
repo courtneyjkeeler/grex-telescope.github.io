@@ -65,7 +65,7 @@ flowchart BT
     subgraph The Box
         G -->|10 MHz| V
         G -->|PPS| S
-        V -->|250 MHz| S
+        V -->|500 MHz| S
         V -->|1030 MHz| B
     end
     A --> G
