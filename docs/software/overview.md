@@ -17,7 +17,7 @@ to reduce the potential of mis-configuration.
 
 ```mermaid
 flowchart TD
-    A[SNAP] -->|UDP| B[Packet Capture]
+    A[SNAP] -->|UDP| B[Byte Slurper]
     B -->|PSRDADA| C[Heimdall]
     C -->|"?"| D["?"]
 ```
@@ -30,6 +30,13 @@ To limit downtime and maximize reproducability, we will try to adopt a consisten
 - Code will be version controlled, organized, and public
 
 ### Language Specific
+
+#### Rust
+
+- No clippy warnings
+- Avoid unsafe
+- Document everything
+- Formatted with rustfmt
 
 #### C++
 

@@ -8,6 +8,11 @@ FPGA to perform the digitization and F-engine components of the system.
 The setup and configuration of this board has seemingly never been well
 documented, so we'll try to make it as painless as possible here.
 
+The FPGA Simulink model is stored
+[here](https://github.com/GReX-Telescope/gateware) with the latest releases
+found [here](https://github.com/GReX-Telescope/gateware/releases). Grab the
+latest fpg file, and you're good to go - no reason to recompile it.
+
 ## KATCP and the Raspberry Pi
 
 The SNAP board itself has no nonvolatile memory, so every time it is
@@ -17,7 +22,7 @@ programmer, the folks at CASPER have added a Raspsberry Pi header such that the
 GPIO from a Pi can bit-bang JTAG. To expose this functionality from remote
 devices, saving you the trouble from SSHing, they've implemented a KATCP
 server on the Pi known as
-[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver). 
+[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver).
 The current source of tcpborphserver is
 [here](https://github.com/casper-astro/katcp_devel/tree/rpi-devel-casperfpga).
 [KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
@@ -52,12 +57,12 @@ from the analog to digital converters (ADCs), run them through a polyphase
 filterbank (PBF) to channelize, and send those channels out over the 10 GbE
 network interface. You would think this would be simple...
 
-The "code" for the FPGA is stored as a bitstream file (BOF). How these files are
-created is beyond the scope of these docs, but at some point we will provide
-this binary blob. Before anything happens, this blob needs to be uploaded to the
-FPGA. As mentioned before, this is done over katcp.
+The "code" for the FPGA is stored as a bitstream binary blob (FPG).
+Before anything happens, this blob needs to be uploaded to the
+FPGA. As mentioned before, this is done over katcp using our snapctl python
+package which utilizes a python3 fork of casperfpga.
 
-TODO! How do we do this? corr? casperfpga? Kiran's new rust tool?
+!!! TODO: Add docs on how to run this tool
 
 ## FPGA Clocks, References, PPS, Synthesizers
 
@@ -70,18 +75,3 @@ check.
 TODO! Somehow
 
 TODO! Check clock is good and everything is locked? Does this happen after ADC configuration?
-
-## ADC Configuration
-
-The next step is to set up the ADCs
-
-## Networking
-
-After the ADCs are setup, we need to configure the SNAP to start giving us data
-over 10 GbE.
-
-TODO! How?
-
-## Bringup Verification
-
-TODO! Do we run the test patterns to make sure things are working?

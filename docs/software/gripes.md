@@ -6,3 +6,5 @@ This is a list of things I've figured out, but not sure what to do with yet
   TCPBorphServer, which is incompatible with `casperfpga`
 - TCOBorphServer is running through init.d and not systemd, for some reason, and
   all of it's logs are discarded. Why?????
+- PSRDADA is completley undocumented
+- The dada interface to heimdall is undocumented
