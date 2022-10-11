@@ -23,7 +23,7 @@ At the beginning of the signal path, the raw voltage present at the analog to di
 results in the full scale voltage data spanning from -1 to 1. As the ADCs present on the SNAP FPGA
 board have several inputs, we have a collection of multiplexers to select the proper pairs.
 
-The implementaion of the ADC interface in the gateware is setup such that each conversion cycle
+The implementation of the ADC interface in the gateware is setup such that each conversion cycle
 yields two samples subsequent in time. This is an artifact of the FPGA clock running at 250 MHz while
 the ADC is running at 500 MHz. We need the ADC to run at this speed to nyquist sample the input at 500 Msps
 for our 250 MHz of bandwidth.
@@ -53,15 +53,15 @@ the 8 most significant bits.
 
 ### Packetization
 
-The last part of the gateware is packaing the channelized voltage data to send to the server. The way the CASPER
+The last part of the gateware is packaging the channelized voltage data to send to the server. The way the CASPER
 10 GbE block works is by accepting 64 bit words and appending them to a first-in-first-out (FIFO) buffer when a
 separate "tx_valid" signal is true. The issue here is that the clock for the 10 GbE core is external and fixed,
 independent of the FPGA clock. To make matters worse, it's slower than our FPGA clock of 250 MHz. So, if we clocked
 data in every cycle of the FPGA clock, this buffer would overflow. Not only that, but the data we have every FPGA clock
 cycle isn't 64 bits, it's 32 bits as we have both polarization's 8+8 bit complex channel value.
 
-So, a solution is to "transose" the data where every other clock cycle we create a 64 bit word of two channels worth of
-data. Therefore, we are clocking data in effectivley at 125 MHz, which is under the 10 GbE core clock and won't overflow.
+So, a solution is to "transpose" the data where every other clock cycle we create a 64 bit word of two channels worth of
+data. Therefore, we are clocking data in effectively at 125 MHz, which is under the 10 GbE core clock and won't overflow.
 
 After we clock in 1024 words (as each word is 2 channels and we have 2048 channels), we must set the "end of frame" flag
 high (coincident with the last valid word). This will then transmit a UDP packet to the configured server and repeat the cycle.
@@ -70,7 +70,7 @@ high (coincident with the last valid word). This will then transmit a UDP packet
 
 A work in progress feature is the addition of timing information to the payloads. This will be critical eventually, but is
 currently untested. The SNAP board has an additional input which accepts a "pulse per second" signal where rising edges are
-coincident with a second from an accuracte UTC clock. For the case of GReX, this will come from a GPS timing reciever or external
+coincident with a second from an accurate UTC clock. For the case of GReX, this will come from a GPS timing receiver or external
 MASER source. In the gateware, there is an "arm" register which is logical ANDed with this PPS signal which starts the timing system.
 
 So, the user will activate this "arm" register and note the next UTC second (assuming the computer that is performing the arming has
@@ -88,10 +88,4 @@ the software on Arch Linux with:
 - MATLAB R2021a
 - Vivado 2021.1
 
-<<<<<<< HEAD
-Both of these were installed directly with their installers, as these old
-versions don't work with the current AUR helpers (it also takes hundreds of
-GB of HDD space and hours of installation).
-=======
 I used AUR helpers for both of these and played around getting their horribly vendored shared libraries to work.
->>>>>>> 3c38fdd (Add more gateware documentation)
