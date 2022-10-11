@@ -1,9 +1,5 @@
 # Software Overview
 
-!!! note
-
-    I don't really understand this yet
-
 There are two primary components to the software stack in GReX. First, the SNAP
 board must be configured and setup to send voltage data to the server. After
 that, the pipeline software _should_ take care of the rest. This pipeline will

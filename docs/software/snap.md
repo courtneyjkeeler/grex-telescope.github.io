@@ -46,7 +46,7 @@ done on guix-provisioned GReX machines.
 
 ### KATCP Networking
 
-The Pi is (hopefully) configured to speak KATCP on `10.10.1.3:7147`. You can check this by opening a telnet connection at that address
+The Pi is (hopefully) configured to speak KATCP on `192.168.0.2:7147`. You can check this by opening a telnet connection at that address
 and running the `?watchdog` command. You should receive a `!watchdog ok`
 response.
 
@@ -57,10 +57,17 @@ from the analog to digital converters (ADCs), run them through a polyphase
 filterbank (PBF) to channelize, and send those channels out over the 10 GbE
 network interface. You would think this would be simple...
 
+<<<<<<< HEAD
 The "code" for the FPGA is stored as a bitstream binary blob (FPG).
 Before anything happens, this blob needs to be uploaded to the
 FPGA. As mentioned before, this is done over katcp using our snapctl python
 package which utilizes a python3 fork of casperfpga.
+=======
+The "code" for the FPGA is stored as a bitstream file (FPG). How these files are
+created is beyond the scope of these docs, but at some point we will provide
+this binary blob. Before anything happens, this blob needs to be uploaded to the
+FPGA. As mentioned before, this is done over katcp.
+>>>>>>> 3c38fdd (Add more gateware documentation)
 
 !!! TODO: Add docs on how to run this tool
 
