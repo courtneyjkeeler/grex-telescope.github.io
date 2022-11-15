@@ -19,3 +19,5 @@ These are supported by some fundamental libraries
   rust library for reading/writing SIGPROC filterbank files
 - [psrdada-rs](https://github.com/kiranshila/psrdada-rs) - A rust library for
   interacting with PSRDADA buffers
+- [casperfpga_rs](https://github.com/kiranshila/casperfpga_rs) - A rust library for
+interacting with the SNAP board over TAPCP

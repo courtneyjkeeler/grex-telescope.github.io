@@ -13,56 +13,18 @@ The FPGA Simulink model is stored
 found [here](https://github.com/GReX-Telescope/gateware/releases). Grab the
 latest fpg file, and you're good to go - no reason to recompile it.
 
-## KATCP and the Raspberry Pi
+## TAPCP and the Raspberry Pi
 
-The SNAP board itself has no nonvolatile memory, so every time it is
-power-cycled, it must be reconfigured.
-Rather than require the user to bring along (and know how to use) a JTAG
-programmer, the folks at CASPER have added a Raspsberry Pi header such that the
-GPIO from a Pi can bit-bang JTAG. To expose this functionality from remote
-devices, saving you the trouble from SSHing, they've implemented a KATCP
-server on the Pi known as
-[tcpborphserver](https://casper.astro.berkeley.edu/wiki/Tcpborphserver).
-The current source of tcpborphserver is
-[here](https://github.com/casper-astro/katcp_devel/tree/rpi-devel-casperfpga).
-[KATCP](https://katcp-python.readthedocs.io/en/latest/_downloads/361189acb383a294be20d6c10c257cb4/NRF-KAT7-6.0-IFCE-002-Rev5-1.pdf)
-is a monitor and control protocol developed by the folks at SARAO that purports
-easy usage and extension. [Here](https://casper.astro.berkeley.edu/wiki/KATCP)
-is the list of commands they've added, which has not been updated since 2012.
+The gateware we've built for the SNAP board includes a small CPU called the MicroBlaze
+that hosts a small webserver to deal with runtime interactions with FPGA memory. This server
+gets an IP address from a DHCP server running on the main capture computer. This interface can also
+be used to reprogram the SNAP if the gateware changes. By deafult, we'll ship SNAP boards that
+have the GReX gateware preprogramed, but it's always possible to reprogram it.
 
-### Raspberry Pi Setup
-
-The image for the rasperry pi comes from
-[here](https://casper.astro.berkeley.edu/wiki/SNAP_Bringup#Configuring_a_SNAP_Raspberry_Pi).
-As GReX uses the RPi Model 3, grab that image and unzip it. You'll need at least
-a 16 GB SD card to write it to. For some reason it has a few more bytes past a
-standard SD card, so use something like
-[PiShrink](https://github.com/Drewsif/PiShrink) to resize the image to its bare
-minimum, then `dd` that, and hopefully it'll resize on boot.
-
-By default, this image sets up static networking on `192.168.0.2\24`, so the
-machine its hooked up to has to talk on that same subnet. This should already be
-done on guix-provisioned GReX machines.
-
-### KATCP Networking
-
-The Pi is (hopefully) configured to speak KATCP on `10.10.1.3:7147`. You can check this by opening a telnet connection at that address
-and running the `?watchdog` command. You should receive a `!watchdog ok`
-response.
-
-## Programming
-
-The core of the SNAP is the FPGA, whose job in GReX is to grab voltage samples
-from the analog to digital converters (ADCs), run them through a polyphase
-filterbank (PBF) to channelize, and send those channels out over the 10 GbE
-network interface. You would think this would be simple...
-
-The "code" for the FPGA is stored as a bitstream binary blob (FPG).
-Before anything happens, this blob needs to be uploaded to the
-FPGA. As mentioned before, this is done over katcp using our snapctl python
-package which utilizes a python3 fork of casperfpga.
-
-!!! TODO: Add docs on how to run this tool
+This interface is over the UDP protocol TFTP, where the folks at CASPER have wrapped reading and
+writing files as the interaction to both the flash and FPU memory. We've written a wrapper to the
+so called "TAPCP" protocol [here](https://github.com/kiranshila/tapcp_rs). It is with this library
+that the packet capture code informs the SNAP when to activate timing signals.
 
 ## FPGA Clocks, References, PPS, Synthesizers
 
