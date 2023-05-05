@@ -24,6 +24,7 @@ nav:
       - "SNAP": software/snap.md
       - "Guix": software/guix.md
       - "Pipeline": software/pipeline.md
+      - "Server Setup": software/server_setup.md
   - About: about.md
 markdown_extensions:
   - admonition

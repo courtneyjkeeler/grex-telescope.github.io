@@ -91,48 +91,77 @@ sudo netplan apply
 
 Now, we need to setup the DHCP server on the 10 GbE port. First, we install the DHCP server software:
 
+
+Setup the repository that includes kea
+
 ```sh
-sudo apt-get install isc-dhcp-server -y
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/isc/kea-2-3/setup.deb.sh' \
+  | sudo -E bash
+```
+
+Then install with 
+```sh
+sudo apt-get install isc-kea-dhcp4
 ```
 
 Now, remove the example file:
 
 ```sh
-sudo rm /etc/dhcp/dhcpd.conf
+sudo rm /etc/kea/kea-dhcp4.conf
 ```
 
-And replace it with a file called `dhcpd.conf` with the following contents
+And replace it with a file called `kea-dhcp4.conf` with the following contents
 
-```conf
-authoritative;
-ddns-update-style interim;
-
-subnet 192.168.0.0 netmask 255.255.255.0 {
-  interfaces enp1s0f0;
-  range 192.168.0.2 192.168.0.100;
-  option routers 192.168.0.1;
-  option broadcast-address 192.168.0.255;
-  option subnet-mask 255.255.255.0;
-  option domain-name-servers 1.1.1.1, 1.0.0.1, 8.8.8.8;
+```json
+{
+    "Dhcp4": {
+        "interfaces-config": {
+            "interfaces": [
+                "enp1s0f0"
+            ],
+            "service-sockets-max-retries": 10,
+            "service-sockets-retry-wait-time": 5000
+        },
+        "lease-database": {
+            "type": "memfile",
+            "persist": true,
+            "name": "/var/lib/kea/kea-leases4.csv",
+            "lfc-interval": 3600
+        },
+        "renew-timer": 15840,
+        "rebind-timer": 27720,
+        "valid-lifetime": 31680,
+        "subnet4": [
+            {
+                "subnet": "192.168.0.0/24",
+                "pools": [
+                    {
+                        "pool": "192.168.0.2 - 192.168.0.100"
+                    }
+                ],
+                "option-data": [
+                    {
+                        "name": "routers",
+                        "data": "192.168.0.1"
+                    }
+                ]
+            }
+        ]
+    }
 }
-```
-
-Next, we bind the DHCP server to the 10 GbE fiber interface. Edit the file `/etc/default/isc-dhcp-server` with
-
-```
-INTERFACESv4="enp1s0f0
 ```
 
 Finally enable the DHCP server service
 
 ```sh
-sudo systemctl enable isc-dhcp-server
+sudo systemctl enable isc-kea-dhcp4-server
 ```
 
 And check the status to make sure everything came up ok
 
 ```sh
-sudo systemctl status isc-dhcp-server
+sudo systemctl status isc-kea-dhcp4-server
 ```
 
 Finally,
@@ -144,7 +173,7 @@ sudo reboot
 After reboot, assuming your fiber line is plugged into the box, run
 
 ```sh
-dhcp-lease-list
+cat /var/lib/kea/kea-leases4.csv
 ```
 
 You should see the raspberry pi.
