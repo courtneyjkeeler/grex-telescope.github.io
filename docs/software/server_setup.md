@@ -49,6 +49,62 @@ sudo hostnamectl set-hostname <your-hostname>
 
 Some updates may require a reboot. If it asks, do that now.
 
+## Graphics Drivers
+
+Puget ships with the NVIDIA drivers preinstalled (as it came with the T1000 card), but the version of CUDA may be out of date (as it was for us).
+To fix this, we're going to purge the system of NVIDIA stuff, add the official upstream NVIDIA package source, and build from there.
+
+First, let's get rid of all the existing NVIDIA stuff.
+
+```sh
+sudo apt-get purge nvidia*
+sudo apt remove nvidia-*
+sudo rm /etc/apt/sources.list.d/cuda*
+sudo apt-get autoremove && sudo apt-get autoclean
+sudo rm -rf /usr/local/cuda*
+```
+
+Now we'll do an update
+
+```sh
+sudo apt update
+sudo apt upgrade
+```
+
+And then install the NVIDIA repository
+
+```sh
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt update
+```
+
+Next, we'll install the NVIDIA driver (515, unless anyone wants to update)
+```sh
+sudo apt install libnvidia-common-515
+sudo apt install libnvidia-gl-515
+sudo apt install nvidia-driver-515
+```
+
+CUDA gets a little tricky, as we have to source the repo a bit more manually.
+
+```sh
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
+sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
+sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
+sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+sudo apt-get update
+sudo apt install cuda-11-7 
+```
+
+Finally, we will fixup our paths for linking when we build stuff with CUDA.
+
+```sh
+echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+sudo ldconfig
+```
+
 ## Networking
 
 Now, we need to setup the networking for the GReX system. We will operate under the assumption that the internet-facing connection will get an IP address from a DHCP server. If that is not the case, consult whoever runs your network on the appropriate setup. Regardless of the WAN connection, the 10 GbE fiber connection to the GReX terminal will be configured the same.
