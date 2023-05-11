@@ -41,7 +41,8 @@ We will be editing a bunch of files, if you are comfy in the command line, you p
 sudo apt-get install emacs vim -y
 ```
 
-Finally, we will set the hostname. We'll be using the `grex-<affiliation>-<location>` paradigm (just for clarity, no real reason not to). As in, the first server that is managed by Caltech at OVRO will be `grex-caltech-ovro`.
+Finally, we will set the hostname. We'll be using the `grex-<affiliation>-<location>` paradigm (just for clarity, no real reason not to).
+As in, the first server that is managed by Caltech at OVRO will be `grex-caltech-ovro`.
 
 ```sh
 sudo hostnamectl set-hostname <your-hostname>
@@ -239,7 +240,7 @@ You should see the raspberry pi.
 Unfortunatley, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
 
 Add the following to `/etc/sysctl.conf`
-eth
+
 ```conf
 kernel.shmmax = 68719476736
 kernel.shmall = 4294967296
@@ -292,7 +293,7 @@ sudo systemctl enable rc-local
 
 Now create the file `/etc/systemd/system/rc-local.service` with the following contents:
 
-```service
+```ini
 [Unit]
  Description=/etc/rc.local Compatibility
  ConditionPathExists=/etc/rc.local
@@ -323,7 +324,7 @@ sudo apt-get install guix
 
 Then, we will add the repository of our pacakges by creating the following file `~/.config/guix/channels.scm`
 
-```scm
+```lisp
 (cons (channel
         (name 'guix-grex)
         (url "https://github.com/GReX-Telescope/guix-grex.git")
@@ -344,7 +345,12 @@ Create (or add to) `~/.bash_profile`
 ```sh
 GUIX_PROFILE="$HOME/.guix-profile"
 . "$GUIX_PROFILE/etc/profile"
+if [ -f ~/.bashrc ]; then
+    source ~/.bashrc
+fi
 ```
+
+In here, we're also souring `~/.bashrc` so we get it over ssh.
 
 Finally, install the pipeline dependencies with:
 
@@ -370,6 +376,24 @@ Then run the installer, using all the default settings
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
+## Python
+
+To get out of version hell for python stuff *not* packaged with guix, we're using [Poetry](https://python-poetry.org/). To install it, we will:
+
+```sh
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+We need to make a few adjustments to `~/.bashrc` to correct the paths and fix a bug. Append the following to the end.
+
+```sh
+export PATH="/home/user/.local/bin:$PATH"
+# Fix the "Poetry: Failed to unlock the collection" issue
+export PYTHON_KEYRING_BACKEND=keyring.backends.null.Keyring
+```
+
+Go ahead and `source ~/.bashrc` now to get these changes in your shell.
+
 ## Pipeline Software
 
 To organize all the software needed for running the whole pipeline, make a new directory wherever you want (say, the home directory?) called `grex`
@@ -380,13 +404,14 @@ mkdir $HOME/grex
 
 Then, move to this directory and clone the software
 
-```
+```sh
 cd $HOME/grex
 git clone https://github.com/GReX-Telescope/Pipeline pipeline
 git clone https://github.com/GReX-Telescope/GReX-T0 t0
+git clone https://github.com/GReX-Telescope/GReX-T2 t2
 ```
 
-### Build T0
+### T0
 
 As T0 is bare rust source code, we need to compile it.
 This links against a few required binaries, so we'll install those:
@@ -399,6 +424,14 @@ sudo apt-get install libhdf5-dev clang parallel -y
 
 ```sh
 cargo build --release
+```
+
+### T2
+
+T2 is a python project, built with poetry. To set it up we will `cd` into the `t2` folder and run:
+
+```sh
+poetry install
 ```
 
 ## Prometheus
@@ -467,7 +500,7 @@ If you are hooking up to our grafana instance, you will get an API key from the 
 
 Now, create a systemd unit to run the database in the file `/etc/systemd/system/prometheus.service`
 
-```systemd
+```ini
 [Unit]
 Description=Prometheus
 Documentation=https://prometheus.io/docs/introduction/overview/
