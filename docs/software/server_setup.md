@@ -564,3 +564,39 @@ python3 pwup_snap.py
 ```
 
 There also exists `pwdn_snap.py`, with an obvious purpose.
+
+# Preconfigured
+
+These steps should already be performed before we ship a box, but for completeness, here are the steps.
+
+## Valon
+
+We need to configure the valon synthesizer to act as the LO for the downconverter and the reference clock for the SNAP ADC.
+
+Use the GUI tool [here](https://valontechnology.com/5009users/5009.htm) to load [this](../assets/grex_valon.VR0) configuration file.
+Next, go to synthesizer -> write registers.
+Then, save the configuration to flash to preserve this configuration across reboots.
+
+## Switch
+
+With the box connected and powered on, create an SSH relay to the switch's configuration interface with
+
+```sh
+ssh -L 8291:192.168.88.1:8291 user@<the ip address of the server>
+```
+
+Then, using [winbox](www.mikrotik.com/download/winbox.exe) connect to localhost, 
+select `files` on the left, and upload [this config file](../assets/GReX_Switch.backup). This should trigger a reboot.
+
+## SNAP Golden Image
+
+In order to use the SNAP's flash, you must first set switch S1 so that switches 2 and 5 are set to on. (In the on position, the switches are moved towards the edge of the PCB). The other switches on S1 should be off. 
+
+The SNAP needs to be programmed with a "golden image" that runs on boot, acting as a bootstrapping device.
+To flash this, you need the free Vivado Lab Edition and the expensive Xilinx Platform Cable.
+
+Under `tools` go to `Add configuration memory device`. Entire configuration
+
+n25q256-3.3v-spi-x1_x2_x4
+
+Unplug programmer before rebooting.
