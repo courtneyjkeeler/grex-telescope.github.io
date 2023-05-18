@@ -2,18 +2,13 @@
 
 There are two primary components to the software stack in GReX. First, the SNAP
 board must be configured and setup to send voltage data to the server. After
-that, the pipeline software _should_ take care of the rest. This pipeline will
-exist as a composition of [Guix](https://guix.gnu.org/) packages and potentially
-as a [Guix
-System](https://guix.gnu.org/manual/en/html_node/Invoking-guix-system.html)
-definition for the entire system. This is to ensure determinisim in builds and
-to reduce the potential of mis-configuration.
+that, the pipeline software _should_ take care of the rest.
 
 ## Pipeline Overview
 
 ```mermaid
 flowchart TD
-    A[SNAP] -->|UDP| B[Byte Slurper]
+    A[SNAP] -->|UDP| B[T0]
     B -->|PSRDADA| C[RFI Cleaning]
     C -->|PSRDADA| D[Heimdall]
     D -->|Sockets| E[T2]
@@ -46,3 +41,5 @@ To limit downtime and maximize reproducability, we will try to adopt a consisten
 - Docstrings will follow the [numpy format](https://numpydoc.readthedocs.io/en/latest/format.html)
 - Gradual typing will be used (PEP 438) and checked with mypy or equivalent
 - Environments will have pinned dependencies (reproducible)
+
+Most of this can be accomplised by using [Poetry](https://python-poetry.org/).

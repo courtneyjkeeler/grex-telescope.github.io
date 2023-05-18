@@ -35,7 +35,7 @@ flowchart BT
     B[FEM]
     C[SNAP]
     S[Switching Supply]
-    R[Linear Regulator]
+    R[Custom Linear PSU]
     P[Raspberry Pi]
     M[Mains Power]
     V[Synthesizer]
@@ -43,11 +43,11 @@ flowchart BT
     M -->|120-240V AC| S
     subgraph The Box
         R -->|6.5V DC| V
-        P -->|"5V DC (USB)"| G
+        R -->|12V DC| G
         S -->|12V DC| C
         S -->|12V DC| R
         R -->|6.5V DC| B
-        C -->|5V DC| P
+        R -->|5V DC| P
     end
     B --->|5.5V DC| L1
     B --->|5.5V DC| L2

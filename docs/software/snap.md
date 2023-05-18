@@ -13,6 +13,22 @@ The FPGA Simulink model is stored
 found [here](https://github.com/GReX-Telescope/gateware/releases). Grab the
 latest fpg file, and you're good to go - no reason to recompile it.
 
+## SNAP Golden Image
+
+To document the steps that are performed before shipping a box, here are the steps to program the golden (bootstrapping) image:
+
+Set switch S1 on the SANP so that switches 2 and 5 are set to on.
+(In the on position, the switches are moved towards the edge of the PCB).
+The other switches on S1 should be off.
+This allows the SNAP to utilize the nonvolatile flash memory.
+
+To flash this storage device, you need the free Vivado Lab Edition and the expensive Xilinx Platform Cable.
+
+In VLE, under `tools` go to `Add configuration memory device`.
+Use the memory device `n25q256-3.3v-spi-x1_x2_x4`.
+Unplug programmer before rebooting.
+All done! A reboot should start blinking some LEDs and the ethernet should get a DHCP address (if it's plugged in).
+
 ## TAPCP and the Raspberry Pi
 
 The gateware we've built for the SNAP board includes a small CPU called the MicroBlaze
@@ -29,11 +45,8 @@ that the packet capture code informs the SNAP when to activate timing signals.
 ## FPGA Clocks, References, PPS, Synthesizers
 
 The FPGA needs an external clock source, which is being provided via one of the
-output of the Valon synthesizer in box. Additionally, the board needs "pulse per
-second" (PPS) ticks, which come from the GPS reciever. If the user is in a place
-which doesn't have GPS (maybe in a lab during testing), we can override that
-check.
+outputs of the Valon synthesizer in the box. Additionally, the board needs "pulse per
+second" (PPS) ticks, which come from the GPS reciever.
 
-TODO! Somehow
-
-TODO! Check clock is good and everything is locked? Does this happen after ADC configuration?
+The Valon synthesizer has two outputs but can lock both to an external reference.
+The GPS receiver in the box provides this (10 MHz) alongside the PPS signal.

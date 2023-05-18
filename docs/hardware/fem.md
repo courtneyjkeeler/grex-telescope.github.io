@@ -11,10 +11,8 @@ Additionally, this module provides rudimentary monitor and control support.
 ## Hardware Design
 
 The hardware design itself is implemented in the free [KiCAD](https://www.kicad.org/)
-program and is available [here](https://github.com/GReX-Telescope/FEM_Hardware).
-To manufacture from gerber files, the stackup needs to be
-[JLC7628](https://cart.jlcpcb.com/impedance) from JLCPCB. The current hardware
-uses ENIG to help reflow of the fine-pitch components.
+program and is available [here](https://github.com/GReX-Telescope/FrontendModule).
+The current hardware uses ENIG to help reflow of the fine-pitch components.
 
 - Schematics
 - BOM

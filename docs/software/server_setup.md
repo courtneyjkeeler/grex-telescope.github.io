@@ -14,7 +14,7 @@ The server straight from Puget does not have the GPU or 10 GbE network card inst
 6. Remove the GPU retention clips from the retention bracket that would interfere with the card. It's too tall for it anyway.
 7. Replace the retention bracket and close the case.
 
-FIXME: Image
+![](../assets/server.jpg)
 
 Finally, we need to hook up a monitor to the 3090 Ti so we can setup the software
 
@@ -587,16 +587,3 @@ ssh -L 8291:192.168.88.1:8291 user@<the ip address of the server>
 
 Then, using [winbox](www.mikrotik.com/download/winbox.exe) connect to localhost, 
 select `files` on the left, and upload [this config file](../assets/GReX_Switch.backup). This should trigger a reboot.
-
-## SNAP Golden Image
-
-In order to use the SNAP's flash, you must first set switch S1 so that switches 2 and 5 are set to on. (In the on position, the switches are moved towards the edge of the PCB). The other switches on S1 should be off. 
-
-The SNAP needs to be programmed with a "golden image" that runs on boot, acting as a bootstrapping device.
-To flash this, you need the free Vivado Lab Edition and the expensive Xilinx Platform Cable.
-
-Under `tools` go to `Add configuration memory device`. Entire configuration
-
-n25q256-3.3v-spi-x1_x2_x4
-
-Unplug programmer before rebooting.

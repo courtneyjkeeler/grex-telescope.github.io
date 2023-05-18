@@ -22,7 +22,6 @@ nav:
       - "Software Stack": software/stack.md
       - "Gateware": software/gateware.md
       - "SNAP": software/snap.md
-      - "Guix": software/guix.md
       - "Pipeline": software/pipeline.md
       - "Server Setup": software/server_setup.md
   - About: about.md

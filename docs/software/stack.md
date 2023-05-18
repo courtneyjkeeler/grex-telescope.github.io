@@ -4,14 +4,13 @@ There are several moving parts to this whole project, most of which are
 organized in our [GitHub organization](https://github.com/GReX-Telescope).
 The notable pieces of software are:
 
-- [snapctl](https://github.com/GReX-Telescope/snapctl) - SNAP bringup and configuration
-- [byte_slurper](https://github.com/GReX-Telescope/byte_slurper) - UDP Packet
+- [snap_bringup](https://github.com/GReX-Telescope/snap_bringup) - SNAP bringup and configuration
+- [T0](https://github.com/GReX-Telescope/GReX-T0) - UDP Packet
   capture and exfil to heimdal
-- [heimdall](https://github.com/GReX-Telescope/heimdall-astro) - Our fork of the
+- [heimdall (T1)](https://github.com/GReX-Telescope/heimdall-astro) - Our fork of the
   pulse detection pipeline which removes clustering and RFI excision
-- T2, T3, etc
-- [fem_mnc](https://github.com/GReX-Telescope/fem_mnc) - Monitor and control of
-  the FEM through the Pi's network connection
+- [T2](https://github.com/GReX-Telescope/GReX-T2)
+- [FrontendModule](https://github.com/GReX-Telescope/FrontendModule) - Hardware and software design for the Frontend Module (FEM)
 
 These are supported by some fundamental libraries
 
