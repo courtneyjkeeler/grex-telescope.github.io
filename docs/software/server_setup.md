@@ -148,7 +148,6 @@ sudo netplan apply
 
 Now, we need to setup the DHCP server on the 10 GbE port. First, we install the DHCP server software:
 
-
 Setup the repository that includes kea
 
 ```sh
@@ -168,7 +167,7 @@ Now, remove the example file:
 sudo rm /etc/kea/kea-dhcp4.conf
 ```
 
-And replace it with a file called `kea-dhcp4.conf` with the following contents
+And replace it with a file called `kea-dhcp4.conf` with the following contents:
 
 ```json
 {
@@ -202,12 +201,19 @@ And replace it with a file called `kea-dhcp4.conf` with the following contents
                         "name": "routers",
                         "data": "192.168.0.1"
                     }
+                ],
+                "reservations" : [
+                    {
+                        "hw-address": "00:24:1D:1B:15:12",
+                        "ip-address": "192.168.0.3"
+                    }
                 ]
             }
         ]
     }
 }
 ```
+This sets up a more or less standard DHCP instance, with one static allocation for the SNAP FPGA, as we're hard-coding it's MAC address in the gateware.
 
 Finally enable the DHCP server service
 
