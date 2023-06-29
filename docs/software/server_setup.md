@@ -50,69 +50,13 @@ sudo hostnamectl set-hostname <your-hostname>
 
 Some updates may require a reboot. If it asks, do that now.
 
-## Graphics Drivers
-
-Puget ships with the NVIDIA drivers preinstalled (as it came with the T1000 card), but the version of CUDA may be out of date (as it was for us).
-To fix this, we're going to purge the system of NVIDIA stuff, add the official upstream NVIDIA package source, and build from there.
-
-First, let's get rid of all the existing NVIDIA stuff.
-
-```sh
-sudo apt-get purge nvidia*
-sudo apt remove nvidia-*
-sudo rm /etc/apt/sources.list.d/cuda*
-sudo apt-get autoremove && sudo apt-get autoclean
-sudo rm -rf /usr/local/cuda*
-```
-
-Now we'll do an update
-
-```sh
-sudo apt update
-sudo apt upgrade
-```
-
-And then install the NVIDIA repository
-
-```sh
-sudo add-apt-repository ppa:graphics-drivers/ppa
-sudo apt update
-```
-
-Next, we'll install the NVIDIA driver (515, unless anyone wants to update)
-```sh
-sudo apt install libnvidia-common-515
-sudo apt install libnvidia-gl-515
-sudo apt install nvidia-driver-515
-```
-
-CUDA gets a little tricky, as we have to source the repo a bit more manually.
-
-```sh
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
-sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub
-sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
-sudo apt-get update
-sudo apt install cuda-11-7 
-```
-
-Finally, we will fixup our paths for linking when we build stuff with CUDA.
-
-```sh
-echo 'export PATH=/usr/local/cuda-11.7/bin:$PATH' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
-source ~/.bashrc
-sudo ldconfig
-```
-
 ## Networking
 
 Now, we need to setup the networking for the GReX system. We will operate under the assumption that the internet-facing connection will get an IP address from a DHCP server. If that is not the case, consult whoever runs your network on the appropriate setup. Regardless of the WAN connection, the 10 GbE fiber connection to the GReX terminal will be configured the same.
 
 ### Overview
 
-The 10 GbE fiber port serves a few purposes. It is the main data transfer link between the FPGA in the field and the server, but it also carries the monitor and control for the box. This monitor and control connection includes the SNAP control connection and the Raspberry Pi. Both of these devices require an external DHCP server, which we have to provide on this port. Additionally, the 10 GbE switch in the box has its own default subnet for configuration (`192.168.88.X`). To make everything talk to each other, we need to add two IPs on this port: one in the subnet of the switch's config interface, and the other for DHCP of the various devices.
+The 10 GbE fiber port serves a few purposes. It is the main data transfer link between the FPGA in the field and the server, but it also carries the monitor and control for the box. This monitor and control connection includes the SNAP control connection and the Raspberry Pi. The SNAP requires an external DHCP server, which we have to provide on this port. Additionally, the 10 GbE switch in the box has its own default subnet for configuration (`192.168.88.X`). To make everything talk to each other, we need to add two IPs on this port: one in the subnet of the switch's config interface, and the other for DHCP of the various devices.
 
 ### Netplan
 
@@ -193,7 +137,7 @@ And replace it with a file called `kea-dhcp4.conf` with the following contents:
                 "subnet": "192.168.0.0/24",
                 "pools": [
                     {
-                        "pool": "192.168.0.2 - 192.168.0.100"
+                        "pool": "192.168.0.4 - 192.168.0.100"
                     }
                 ],
                 "option-data": [
@@ -233,13 +177,11 @@ Finally,
 sudo reboot
 ```
 
-After reboot, assuming your fiber line is plugged into the box, run
+After reboot, assuming your fiber line is plugged into the box, you can check the leases by looking at
 
 ```sh
 cat /var/lib/kea/kea-leases4.csv
 ```
-
-You should see the raspberry pi.
 
 ### Advanced 10 GbE Settings
 
@@ -252,13 +194,7 @@ kernel.shmmax = 68719476736
 kernel.shmall = 4294967296
 net.core.rmem_max = 536870912
 net.core.wmem_max = 536870912
-net.core.netdev_max_backlog = 416384
 net.core.optmem_max = 16777216
-net.ipv4.udp_mem = 11416320 15221760 22832640
-net.core.netdev_budget = 1024
-net.ipv4.tcp_timestamps = 0
-net.ipv4.tcp_sack = 0
-net.ipv4.tcp_low_latency = 1
 vm.swappiness=1
 ```
 
@@ -402,42 +338,17 @@ Go ahead and `source ~/.bashrc` now to get these changes in your shell.
 
 ## Pipeline Software
 
-To organize all the software needed for running the whole pipeline, make a new directory wherever you want (say, the home directory?) called `grex`
+To organize all the software needed for running the whole pipeline, we will grab the metapackage from github and clone somewhere (like the home directory):
 
 ```sh
-mkdir $HOME/grex
+cd
+git clone --recurse-submodules https://github.com/GReX-Telescope/grex
 ```
 
-Then, move to this directory and clone the software
+Then, assuming you followed all the previous steps, build the pipeline software with
 
 ```sh
-cd $HOME/grex
-git clone https://github.com/GReX-Telescope/Pipeline pipeline
-git clone https://github.com/GReX-Telescope/GReX-T0 t0
-git clone https://github.com/GReX-Telescope/GReX-T2 t2
-```
-
-### T0
-
-As T0 is bare rust source code, we need to compile it.
-This links against a few required binaries, so we'll install those:
-
-```sh
-sudo apt-get install libhdf5-dev clang parallel -y
-```
-
-`cd` into the `t0` folder we just created and run:
-
-```sh
-cargo build --release
-```
-
-### T2
-
-T2 is a python project, built with poetry. To set it up we will `cd` into the `t2` folder and run:
-
-```sh
-poetry install
+./grex/build.sh
 ```
 
 ## Prometheus
@@ -557,10 +468,10 @@ sudo apt-get install prometheus-node-exporter
 
 # Turning on the SNAP
 
-SSH into the Pi (password is raspberry) via
+To turn on the SNAP, SSH into the Pi (password is the same as the host machine) via
 
 ```sh
-ssh pi@<the ip from dhcp-lease-list>
+ssh pi@192.168.0.2
 ```
 
 Then on the pi, run
@@ -573,7 +484,7 @@ There also exists `pwdn_snap.py`, with an obvious purpose.
 
 # Preconfigured
 
-These steps should already be performed before we ship a box, but for completeness, here are the steps.
+These steps should already be performed before we ship a box, but for completeness, here are the steps that we performed.
 
 ## Valon
 
@@ -593,3 +504,16 @@ ssh -L 8291:192.168.88.1:8291 user@<the ip address of the server>
 
 Then, using [winbox](www.mikrotik.com/download/winbox.exe) connect to localhost, 
 select `files` on the left, and upload [this config file](../assets/GReX_Switch.backup). This should trigger a reboot.
+
+## Raspberry Pi
+
+We prepared the RPi image using the standard [raspbain lite OS](https://www.raspberrypi.com/software/operating-systems/).
+As part of the initial image creation, we set the hostname to `grex-pi` and enabled password-based SSH.
+
+Using `raspi-config`, we did the following:
+- disabled the serial login shell
+- enabled the hardware serial interface
+
+Then, we disabled the hardware's radios by modifying the `config.txt` file [like so](https://raspberrytips.com/disable-wifi-raspberry-pi/).
+
+Then, we configured the Pi to have the static IP address of `192.168.0.2` by following [this](https://www.makeuseof.com/raspberry-pi-set-static-ip/)
