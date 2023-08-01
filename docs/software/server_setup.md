@@ -517,3 +517,9 @@ Using `raspi-config`, we did the following:
 Then, we disabled the hardware's radios by modifying the `config.txt` file [like so](https://raspberrytips.com/disable-wifi-raspberry-pi/).
 
 Then, we configured the Pi to have the static IP address of `192.168.0.2` by following [this](https://www.makeuseof.com/raspberry-pi-set-static-ip/)
+
+Then, we disabled HCI UART by running
+
+```sh
+sudo systemctl disable hciuart
+```
