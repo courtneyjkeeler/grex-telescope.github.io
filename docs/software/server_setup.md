@@ -92,83 +92,39 @@ sudo netplan apply
 
 Now, we need to setup the DHCP server on the 10 GbE port. First, we install the DHCP server software:
 
-Setup the repository that includes kea
-
 ```sh
-curl -1sLf \
-  'https://dl.cloudsmith.io/public/isc/kea-2-3/setup.deb.sh' \
-  | sudo -E bash
+sudo apt-get install dnsmasq
 ```
 
-Then install with 
-```sh
-sudo apt-get install isc-kea-dhcp4
+Create the configuration file in `/etc/dnsmasq.conf`
+
+```ini
+# Only bind to the 10 GbE interface
+interface=enp1s0f0
+# Disable DNS
+port=0
+# DHCP Options
+dhcp-range=192.168.0.0,static
+dhcp-option=option:router,192.168.0.1
+dhcp-option=option:netmask,255.255.255.0
+dhcp-host=00:40:BF:06:13:02,192.168.0.3,snap
+log-async
+log-queries
+log-dhcp
 ```
 
-Now, remove the example file:
-
-```sh
-sudo rm /etc/kea/kea-dhcp4.conf
-```
-
-And replace it with a file called `kea-dhcp4.conf` with the following contents:
-
-```json
-{
-    "Dhcp4": {
-        "interfaces-config": {
-            "interfaces": [
-                "enp1s0f0"
-            ],
-            "service-sockets-max-retries": 10,
-            "service-sockets-retry-wait-time": 5000
-        },
-        "lease-database": {
-            "type": "memfile",
-            "persist": true,
-            "name": "/var/lib/kea/kea-leases4.csv",
-            "lfc-interval": 3600
-        },
-        "renew-timer": 15840,
-        "rebind-timer": 27720,
-        "valid-lifetime": 31680,
-        "subnet4": [
-            {
-                "subnet": "192.168.0.0/24",
-                "pools": [
-                    {
-                        "pool": "192.168.0.4 - 192.168.0.100"
-                    }
-                ],
-                "option-data": [
-                    {
-                        "name": "routers",
-                        "data": "192.168.0.1"
-                    }
-                ],
-                "reservations" : [
-                    {
-                        "hw-address": "00:24:1D:1B:15:12",
-                        "ip-address": "192.168.0.3"
-                    }
-                ]
-            }
-        ]
-    }
-}
-```
-This sets up a more or less standard DHCP instance, with one static allocation for the SNAP FPGA, as we're hard-coding it's MAC address in the gateware.
+This sets up a very simple DHCP server that just gives the IP address `192.168.0.3` to the SNAP, which has a hard-coded MAC address.
 
 Finally enable the DHCP server service
 
 ```sh
-sudo systemctl enable isc-kea-dhcp4-server
+sudo systemctl enable dnsmasq --now
 ```
 
 And check the status to make sure everything came up ok
 
 ```sh
-sudo systemctl status isc-kea-dhcp4-server
+sudo systemctl status dnsmasq
 ```
 
 Finally,
@@ -177,10 +133,10 @@ Finally,
 sudo reboot
 ```
 
-After reboot, assuming your fiber line is plugged into the box, you can check the leases by looking at
+After reboot, assuming your fiber line is plugged into the box and the SNAP is turned on, you can check the lease by looking at
 
 ```sh
-cat /var/lib/kea/kea-leases4.csv
+cat /var/lib/misc/dnsmasq.leases
 ```
 
 ### Advanced 10 GbE Settings
