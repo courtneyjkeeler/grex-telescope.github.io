@@ -20,7 +20,6 @@ nav:
   - Software:
       - "Overview": software/overview.md
       - "Software Stack": software/stack.md
-      - "Gateware": software/gateware.md
       - "SNAP": software/snap.md
       - "Pipeline": software/pipeline.md
       - "Server Setup": software/server_setup.md
