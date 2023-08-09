@@ -6,21 +6,27 @@ routing, etc.
 ## Interface Plate
 
 The custom interface plate is machined from stock aluminum
-measuring approximately 12x3x1/8 inches. The drilled holes are
-measured such that the stock size does not need to be precise.
-The drilled hole specifications are shown in the drawing below:
+measuring approximately 12x3x1/8 inches. The drilled hole specifications are shown in the drawing below:
 
 |       Interface Plate Drawing        |
 |:------------------------------------:|
 | ![](../assets/End_Plate_Drawing.jpg) |
 
-Note that the eight tapped holes around the perimeter of the 
+<details>
+<summary>Tips for machining</summary>
+The drilled holes are measured such that the stock size does not 
+need to be precise. This plate will later be used to mark the corresponding 
+holes on the main box, so the outer eight holes could be measured from 
+all four sides. We assume the long edges arrive machined parallel. Note that the 
+eight tapped holes around the perimeter of the 
 piece should first be drilled with a #29 bit. After aligning
 the plate and marking the bottom of the box, the holes are re-drilled
 using the specified #18 bit.
 
+</details>
+
 To adhere the interface plate to the main box, first the
-cutout must be made with a hand saw. Refer to the drawing below
+cutout must be made with a jig saw. Refer to the drawing below
 for placement. Note that the "bottom" of the box is defined when 
 the lid is facing upwards and the hinge is on the left side. 
 Double check that the internal ground pin is not removed or damaged with the cutout.
@@ -28,6 +34,14 @@ Double check that the internal ground pin is not removed or damaged with the cut
 |        Box Cutout Drawing        |
 |:--------------------------------:|
  | ![](../assets/Bottom_cutout.jpg) |
+
+<details>
+<summary>Tips for machining</summary>
+After marking the box according to the above drawing, we marked four points: one
+inside each corner of the cutout, offset 3/8" from the edge. We drilled 3/4" holes
+at each point, which served as entry points for the jigsaw blade (20 TPI, no 
+oscillation). File generously to remove sharp edges.
+</details>
 
 After the cutout is finished, use the interface plate to mark
 the location of the eight screw holes. When determining the position
@@ -102,10 +116,11 @@ instead:
 |:----------------------------------------:|
 | ![](/../assets/future_plate_drawing.jpg) |
 
-Info on the heatsink will go here...
+TODO: Info on the heatsink will go here. Note on the difference in standoff height
+with this addition.
 
-Info on thermally coupling the plate to the box will go here: 0.9 in 
-separation, possibly aluminum channel sandwiched with thermal squishies.
+TODO: Info on thermally coupling the plate to the box will go here: 0.9 in 
+separation, possibly aluminum channel sandwiched with adhesive thermal pads.
 
 ## Enclosure Lid
 
@@ -162,15 +177,35 @@ TODO: a schematic would be nice
   * Green cable from lid ground pin to bottom ground pin
 * RPi
   * Red/white braided wire from 5V, GND terminal to RPi terminal of PSU
-  * Red/white braided wire from 1020, GND terminal to 
+  * Red/white braided wire from IO20, GND terminal to PSU
 
 ## Mounting Brackets
 
-Cut the square tube to 15" plus four 1" spacers. Drill out the 10th hole
-from the uncut end. Drill a hole between the 6th and 7th holes (from the 
-uncut end). Insert the v-bolt and saddle lock into the drilled holes, fix 
+Cut the square tube to 15" plus four 1" spacers. Using the 'X' size drill bit,
+drill out the 10th hole and drill a hole between the 6th and 7th holes from the
+uncut end. Insert the v-bolt and saddle lock into the drilled holes, fix 
 with washer and nut.
+
+Insert bolts through the third hole in from each end. Add 1" spacer to each,
+and thread through the tabs on the back of the box. Affix with a washer
+and nut.
+
+|     Mounting Brackets      |
+|:--------------------------:|
+| ![](/../assets/mounts.png) |
 
 ## Final Steps
 
 Apply lock-tite to all hardware except those with nylocks.
+
+Run fiber cable through the 1 in nipple pipe into the Switch. Plug pipe
+with steel wool.
+
+Screw feed to the top of the box. LNAs connect to terminals on feed, and
+SMA cables connect LNAs to POLA, POLB on interface plate. Magnetic GPS unit
+attaches to side arm, and screws into GPS port on interface plate.
+
+TODO: side arm?
+
+The GReX box is designed to mount on a vertical pipe. Use the V bolt and
+saddle lock to adjust and tighten.
