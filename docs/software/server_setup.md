@@ -62,6 +62,19 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 
 In `/etc/netplan` remove any files that are currently there.
 
+Check whether you are using NetworkManager or networkd:
+```
+systemctl status NetworkManager
+systemctl status systemd-networkd
+```
+
+If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+```
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+sudo systemctl enable systemd-networkd
+```
+
 Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
@@ -141,7 +154,7 @@ cat /var/lib/misc/dnsmasq.leases
 
 ### Advanced 10 GbE Settings
 
-Unfortunatley, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
+Unfortunately, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
 
 Add the following to `/etc/sysctl.conf`
 
@@ -183,12 +196,6 @@ Make this file executable with
 sudo chmod +x /etc/rc.local
 ```
 
-Then enable the `rc-local` service
-
-```sh
-sudo systemctl enable rc-local
-```
-
 Now create the file `/etc/systemd/system/rc-local.service` with the following contents:
 
 ```ini
@@ -206,6 +213,12 @@ Now create the file `/etc/systemd/system/rc-local.service` with the following co
 
 [Install]
  WantedBy=multi-user.target
+```
+
+Then enable the `rc-local` service
+
+```sh
+sudo systemctl enable rc-local
 ```
 
 Finally, reboot
@@ -259,7 +272,7 @@ guix install psrdada snap_bringup heimdall-astro
 ## Rust
 
 Many parts of the pipeline software are written in the Rust programming language.
-We will build be building this software from scratch, so we need to install the rust compiler and it's tooling.
+We will be building this software from scratch, so we need to install the rust compiler and its tooling.
 This is easy enough with [rustup](https://rustup.rs/)
 
 We need curl for the rustup installer, so
@@ -463,7 +476,7 @@ select `files` on the left, and upload [this config file](../assets/GReX_Switch.
 
 ## Raspberry Pi
 
-We prepared the RPi image using the standard [raspbain lite OS](https://www.raspberrypi.com/software/operating-systems/).
+We prepared the RPi image using the standard [raspbian lite OS](https://www.raspberrypi.com/software/operating-systems/).
 As part of the initial image creation, we set the hostname to `grex-pi` and enabled password-based SSH.
 
 Using `raspi-config`, we did the following:
