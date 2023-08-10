@@ -156,7 +156,7 @@ cat /var/lib/misc/dnsmasq.leases
 
 Unfortunately, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
 
-Add the following to `/etc/sysctl.conf`
+Create the file `/etc/sysctl.d/20-grex.conf` with the following contents:
 
 ```conf
 kernel.shmmax = 68719476736
@@ -261,7 +261,7 @@ if [ -f ~/.bashrc ]; then
 fi
 ```
 
-In here, we're also souring `~/.bashrc` so we get it over ssh.
+In here, we're also sourcing `~/.bashrc` so we get it over ssh.
 
 Finally, install the pipeline dependencies with:
 
