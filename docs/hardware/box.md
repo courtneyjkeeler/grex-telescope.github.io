@@ -12,7 +12,7 @@ The drilled hole specifications are shown in the drawing below:
 
 |       Interface Plate Drawing        |
 |:------------------------------------:|
-| ![](../assets/End_Plate_Drawing.jpg) |
+| ![](../assets/End_Plate_drawing.jpg) |
 
 Note that the eight tapped holes around the perimeter of the 
 piece should first be drilled with a #29 bit. After aligning
