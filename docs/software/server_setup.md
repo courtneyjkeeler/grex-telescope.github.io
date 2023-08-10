@@ -62,6 +62,19 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 
 In `/etc/netplan` remove any files that are currently there.
 
+Check whether you are using NetworkManager or networkd:
+```
+systemctl status NetworkManager
+systemctl status systemd-networkd
+```
+
+If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+```
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+sudo systemctl enable systemd-networkd
+```
+
 Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
