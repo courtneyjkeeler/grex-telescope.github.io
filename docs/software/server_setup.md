@@ -307,6 +307,12 @@ Then, assuming you followed all the previous steps, build the pipeline software 
 ./grex/build.sh
 ```
 
+Lastly, you'll need to install the `parallel` package
+
+```sh
+sudo apt install parallel -y
+```
+
 ## Prometheus
 
 To save data about the server (CPU usage, RAM usage, etc) and to collect monitoring metrics from various pieces of pipeline software, we use the [prometheus](https://prometheus.io/) time series database. Each server will host its own database and *push* updates to the monitoring frontend Grafana.
