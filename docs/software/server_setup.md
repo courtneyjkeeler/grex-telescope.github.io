@@ -62,6 +62,19 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 
 In `/etc/netplan` remove any files that are currently there.
 
+Check whether you are using NetworkManager or networkd:
+```
+systemctl status NetworkManager
+systemctl status systemd-networkd
+```
+
+If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+```
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+sudo systemctl enable systemd-networkd
+```
+
 Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
@@ -141,9 +154,9 @@ cat /var/lib/misc/dnsmasq.leases
 
 ### Advanced 10 GbE Settings
 
-Unfortunatley, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
+Unfortunately, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
 
-Add the following to `/etc/sysctl.conf`
+Create the file `/etc/sysctl.d/20-grex.conf` with the following contents:
 
 ```conf
 kernel.shmmax = 68719476736
@@ -183,12 +196,6 @@ Make this file executable with
 sudo chmod +x /etc/rc.local
 ```
 
-Then enable the `rc-local` service
-
-```sh
-sudo systemctl enable rc-local
-```
-
 Now create the file `/etc/systemd/system/rc-local.service` with the following contents:
 
 ```ini
@@ -206,6 +213,12 @@ Now create the file `/etc/systemd/system/rc-local.service` with the following co
 
 [Install]
  WantedBy=multi-user.target
+```
+
+Then enable the `rc-local` service
+
+```sh
+sudo systemctl enable rc-local
 ```
 
 Finally, reboot
@@ -248,7 +261,7 @@ if [ -f ~/.bashrc ]; then
 fi
 ```
 
-In here, we're also souring `~/.bashrc` so we get it over ssh.
+In here, we're also sourcing `~/.bashrc` so we get it over ssh.
 
 Finally, install the pipeline dependencies with:
 
@@ -259,7 +272,7 @@ guix install psrdada snap_bringup heimdall-astro
 ## Rust
 
 Many parts of the pipeline software are written in the Rust programming language.
-We will build be building this software from scratch, so we need to install the rust compiler and it's tooling.
+We will be building this software from scratch, so we need to install the rust compiler and its tooling.
 This is easy enough with [rustup](https://rustup.rs/)
 
 We need curl for the rustup installer, so
@@ -428,60 +441,4 @@ Now we will install the node-exporter, which gives us metrics of the computer it
 sudo apt-get install prometheus-node-exporter
 ```
 
-# Turning on the SNAP
-
-To turn on the SNAP, SSH into the Pi (password is the same as the host machine) via
-
-```sh
-ssh pi@192.168.0.2
-```
-
-Then on the pi, run
-
-```sh
-python3 pwup_snap.py
-```
-
-There also exists `pwdn_snap.py`, with an obvious purpose.
-
-# Preconfigured
-
-These steps should already be performed before we ship a box, but for completeness, here are the steps that we performed.
-
-## Valon
-
-We need to configure the valon synthesizer to act as the LO for the downconverter and the reference clock for the SNAP ADC.
-
-Use the GUI tool [here](https://valontechnology.com/5009users/5009.htm) to load [this](../assets/grex_valon.VR0) configuration file.
-Next, go to synthesizer -> write registers.
-Then, save the configuration to flash to preserve this configuration across reboots.
-
-## Switch
-
-With the box connected and powered on, create an SSH relay to the switch's configuration interface with
-
-```sh
-ssh -L 8291:192.168.88.1:8291 user@<the ip address of the server>
-```
-
-Then, using [winbox](www.mikrotik.com/download/winbox.exe) connect to localhost, 
-select `files` on the left, and upload [this config file](../assets/GReX_Switch.backup). This should trigger a reboot.
-
-## Raspberry Pi
-
-We prepared the RPi image using the standard [raspbain lite OS](https://www.raspberrypi.com/software/operating-systems/).
-As part of the initial image creation, we set the hostname to `grex-pi` and enabled password-based SSH.
-
-Using `raspi-config`, we did the following:
-- disabled the serial login shell
-- enabled the hardware serial interface
-
-Then, we disabled the hardware's radios by modifying the `config.txt` file [like so](https://raspberrytips.com/disable-wifi-raspberry-pi/).
-
-Then, we configured the Pi to have the static IP address of `192.168.0.2` by following [this](https://www.makeuseof.com/raspberry-pi-set-static-ip/)
-
-Then, we disabled HCI UART by running
-
-```sh
-sudo systemctl disable hciuart
-```
+All done! We should now be ready to run the pipeline!
