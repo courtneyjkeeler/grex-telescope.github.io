@@ -120,37 +120,51 @@ port=0
 dhcp-range=192.168.0.0,static
 dhcp-option=option:router,192.168.0.1
 dhcp-option=option:netmask,255.255.255.0
-dhcp-host=00:40:BF:06:13:02,192.168.0.3,snap
+#dhcp-host=<SNAP_MAC>,192.168.0.3,snap
 log-async
 log-queries
 log-dhcp
 ```
 
-This sets up a very simple DHCP server that just gives the IP address `192.168.0.3` to the SNAP, which has a hard-coded MAC address.
-
-Finally enable the DHCP server service
-
+Then, enable the DHCP server service
 ```sh
 sudo systemctl enable dnsmasq --now
 ```
 
-And check the status to make sure everything came up ok
+This sets up a very simple DHCP server that will give the IP address `192.168.0.3` to the SNAP.
+Unfortunately, the folks who set up the networking interface for the SNAP only provide a DHCP interface and a dynamic (non-observable) MAC address (for some reason).
+As such, we have to now turn on the SNAP, wait for it to try to get an IP address from `dnsmasq` so we know it's MAC, then update the `dhcp-host` line and restart the DHCP server.
 
-```sh
-sudo systemctl status dnsmasq
+1. Power cycle the SNAP (or turn it on if it wasn't turned on yet) following the instructions in [operation](operation.md)
+2. Wait a moment and open the log of dnsmasq with `journalctl -u dnsmasq`, skip to the bottom with `G` (Shift + g)
+3. You should see a line like
+```
+Aug 16 14:39:06 grex-caltech-ovro dnsmasq-dhcp[5115]: 1085377743 DHCPDISCOVER(enp1s0f0) 00:40:bf:06:13:02 no address available
+```
+This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different).
+4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
+   For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap`
+5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
+
+After waiting a bit for the SNAP to send a new request for a DHCP lease, look at the latest logs again from journalctl. If it ends with something like
+
+```
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 DHCPREQUEST(enp1s0f0) 192.168.0.3 00:40:bf:06:13:02
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 tags: known, enp1s0f0
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 DHCPACK(enp1s0f0) 192.168.0.3 00:40:bf:06:13:02 snap
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 requested options: 1:netmask, 3:router, 28:broadcast, 6:dns-server
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 next server: 192.168.0.1
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  1 option: 53 message-type  5
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 54 server-identifier  192.168.0.1
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 51 lease-time  1h
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 58 T1  30m
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 59 T2  52m30s
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 28 broadcast  192.168.0.255
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option:  1 netmask  255.255.255.0
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option:  3 router  192.168.0.1
 ```
 
-Finally,
-
-```sh
-sudo reboot
-```
-
-After reboot, assuming your fiber line is plugged into the box and the SNAP is turned on, you can check the lease by looking at
-
-```sh
-cat /var/lib/misc/dnsmasq.leases
-```
+That means the SNAP got an IP. You should now be able to `ping 192.168.0.3` to make sure it's alive.
 
 ### Advanced 10 GbE Settings
 
