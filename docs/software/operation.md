@@ -42,3 +42,22 @@ exit 0
 ```
 
 Make it executable is `chmod +x snap.sh`, and use `./snap.sh <on|off>` to control the power state of the SNAP.
+
+## Running the Pipeline
+
+In the `grex` folder, under `pipeline` there is the single bash script that runs the pipeline.
+Simply calling it `./grex.sh` should start everything up. By default, it will run the normal detection pipeline.
+If you want to just run T0 (packet capture and first stage processing), remove the final line that calls `psrdada` and replace it (the whole line) with `filterbank`.
+
+## Triggering voltage dumps
+
+Normally, T2 will send triggers to T0 to dump the voltage ringbuffer to disk. You can emulate this by sending a UDP packet to the trigger socket any other way. One simple way is with bash
+
+```bash
+echo " " > /dev/udp/localhost/65432
+```
+
+### Voltage Dump Format
+
+The voltage dumps you get are written as HDF5 files. It contains a single tensor of complex voltage data from both polarizations. Additionally, there is a timestamp attribute on the data, as MJD Days (UTC). This timestamp is for the first sample in the time axis.
+
