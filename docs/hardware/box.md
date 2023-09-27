@@ -8,9 +8,9 @@ routing, etc.
 The custom interface plate is machined from stock aluminum
 measuring approximately 12x3x1/8 inches. The drilled hole specifications are shown in the drawing below:
 
-|       Interface Plate Drawing        |
-|:------------------------------------:|
-| ![](../assets/End_Plate_Drawing.jpg) |
+|        Interface Plate Drawing        |
+|:-------------------------------------:|
+| ![](/../assets/End_Plate_Drawing.jpg) |
 
 <details>
 <summary>Tips for machining</summary>
@@ -31,9 +31,9 @@ for placement. Note that the "bottom" of the box is defined when
 the lid is facing upwards and the hinge is on the left side. 
 Double check that the internal ground pin is not removed or damaged with the cutout.
 
-|        Box Cutout Drawing        |
-|:--------------------------------:|
- | ![](../assets/Bottom_cutout.jpg) |
+|        Box Cutout Drawing         |
+|:---------------------------------:|
+ | ![](/../assets/Bottom_cutout.jpg) |
 
 <details>
 <summary>Tips for machining</summary>
@@ -48,12 +48,14 @@ the location of the eight screw holes. When determining the position
 of the interface plate, ensure that there is sufficient clearance space
 for the locking washer on the nipple pipe.
 
+Painting
+
 Affix the interface plate and conductive rubber gasket to the box with pan head cross
 screws, #8-32 5/16".
 
-|       Interface Plate Assembly        |
-|:-------------------------------------:|
-| ![](../assets/Exploded_interface.jpg) |
+|        Interface Plate Assembly        |
+|:--------------------------------------:|
+| ![](/../assets/Exploded_interface.jpg) |
 
 Grind down the back cover of the weatherproof box so that it lays
 flat against the interface plate. Drill the center hole with the 
@@ -144,10 +146,14 @@ washer + nut combo from L bracket through the lid.
 
 ## Wiring
 
-TODO: a schematic would be nice
+|         Wiring Diagram          |
+|:-------------------------------:|
+| ![](/../assets/GReX_wiring.png) |
 
+<details>
+<summary>Wiring Key</summary>
 * Valon
-  * Red/black braided wire from +6Vdc to 'Valon' terminal of PSU
+  * Red/white braided wire from +6Vdc to 'Valon' terminal of PSU
   * 086-3SMR+ cable from Source 1 SMA to top middle FEM
   * 086-8SMR+ cable from Ext Ref SMA to top left GPS
   * 086-12SMRSM+ cable from Source 2 SMA to 4th from right SNAP
@@ -161,23 +167,24 @@ TODO: a schematic would be nice
   * 086-4 or 086-3SM+ cable from bottom right amp to 9th from left SNAP
   * Red/white braided wire from bottom right amp to RPi terminal PSU
 * GPS
-  * 086-15SMRSM+ cable from top right to 5th from right SNAP
-  * 086-24 cable from bottom SMA to GPS on interface
+  * 086-15SMRSM+ cable from top right to 2nd from right SNAP
+  * 086-15SMRSM+ cable from bottom SMA to GPS on interface
   * Power plug to Fan terminal of PSU
 * SNAP
-  * 6 pin power plug to SNAP terminal of PSU
+  * 18 gauge red/black pair from 6 pin power plug to SNAP terminal of PSU
+  * P1, P2 to SFP+ 1,2 on Switch
 * Switch
   * Power plug to Switch terminal of PSU
-  * Insert SFP+ 1 and 2
   * Ethernet cable from PoE In to bottom left ethernet plug of RPi
 * LRS-50
-  * Black, red wire from V-, V+ to GND, 12V terminal of PSU
-  * Black, white wire from L, N to H, N feedthroughs on interface
-  * Green cable from GND to bottom ground pin
-  * Green cable from lid ground pin to bottom ground pin
+  * 18 gauge red/black pair from V-, V+ to GND, 12V terminal of PSU
+  * Black, white wire (16 gauge bundle) from L, N to H, N feedthroughs on interface
+  * Green cable (16 gauge bundle) from GND to bottom ground pin
+  * 16 gauge green cable from lid ground pin to bottom ground pin
 * RPi
   * Red/white braided wire from 5V, GND terminal to RPi terminal of PSU
-  * Red/white braided wire from IO20, GND terminal to PSU
+  * Red/white braided wire from IO20, GND terminal to SW, GND of PSU
+</details>
 
 ## Mounting Brackets
 
@@ -209,3 +216,4 @@ TODO: side arm?
 
 The GReX box is designed to mount on a vertical pipe. Use the V bolt and
 saddle lock to adjust and tighten.
+
