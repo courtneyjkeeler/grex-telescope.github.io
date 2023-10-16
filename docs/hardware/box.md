@@ -140,9 +140,16 @@ metric hardware 3mm in length.
 
 ## Fan
 
-The fan is attached to the lid with 1/4" L brackets and 4-40 hardware. 5/16" screws 
+The fan can be attached to the lid with 1/4" L brackets and 4-40 hardware. 5/16" screws 
 from the fan into the threaded side of the L bracket. 3/4" hardware with locking
 washer + nut combo from L bracket through the lid.
+
+In the case where the SNAP FPGA fan is missing, the large fan is mounted directly
+to the SNAP board, using the three unused mounting holes on the right hand side. 
+The .stl file for the adjustable height 3D printed bracket can be found [here](/../assets/base2.STL). Use #6 hardware to 
+attach the fan to the base, and #2 hardware to attach the base to the SNAP. 
+
+The fan is wired to the Fan terminal of the PSU using the braided red and white wire.
 
 ## Wiring
 
