@@ -20,12 +20,25 @@ To document the steps that are performed before shipping a box, here are the ste
 Set switch S1 on the SANP so that switches 2 and 5 are set to on.
 (In the on position, the switches are moved towards the edge of the PCB).
 The other switches on S1 should be off.
-This allows the SNAP to utilize the nonvolatile flash memory.
+This allows the SNAP to boot from the nonvolatile flash memory.
 
-To flash this storage device, you need the free Vivado Lab Edition and the expensive Xilinx Platform Cable.
+To flash this storage device, you need the free Vivado Lab Edition (VLE) and the expensive Xilinx Platform Cable.
+
+After launching VLE, click `Open hardware manager`. After this, a green bar at the top should ask you to autoconnect. Assuming the platform cable is plugged into the SNAP and everything is powered on, click on that. It should connect and show the `xc7k160t` FPGA in the hardware section on the left.
+
+![](../assets/snap_connect.png)
 
 In VLE, under `tools` go to `Add configuration memory device`.
 Use the memory device `n25q256-3.3v-spi-x1_x2_x4`.
+
+![](../assets/config_mem.png)
+
+It will then ask if you want to program the memory now, hit `Ok`.
+
+Using the golden image for the configuration file [here](../assets/golden.bin), program the entire configuration memory device.
+
+![](../assets/snap_prog.png)
+
 Unplug programmer before rebooting.
 All done! A reboot should start blinking some LEDs and the ethernet should get a DHCP address (if it's plugged in).
 

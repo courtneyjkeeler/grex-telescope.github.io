@@ -62,6 +62,19 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 
 In `/etc/netplan` remove any files that are currently there.
 
+Check whether you are using NetworkManager or networkd:
+```
+systemctl status NetworkManager
+systemctl status systemd-networkd
+```
+
+If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+```
+sudo systemctl stop NetworkManager
+sudo systemctl disable NetworkManager
+sudo systemctl enable systemd-networkd
+```
+
 Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
@@ -92,102 +105,72 @@ sudo netplan apply
 
 Now, we need to setup the DHCP server on the 10 GbE port. First, we install the DHCP server software:
 
-Setup the repository that includes kea
-
 ```sh
-curl -1sLf \
-  'https://dl.cloudsmith.io/public/isc/kea-2-3/setup.deb.sh' \
-  | sudo -E bash
+sudo apt-get install dnsmasq
 ```
 
-Then install with 
+Create the configuration file in `/etc/dnsmasq.conf`
+
+```ini
+# Only bind to the 10 GbE interface
+interface=enp1s0f0
+# Disable DNS
+port=0
+# DHCP Options
+dhcp-range=192.168.0.0,static
+dhcp-option=option:router,192.168.0.1
+dhcp-option=option:netmask,255.255.255.0
+#dhcp-host=<SNAP_MAC>,192.168.0.3,snap
+log-async
+log-queries
+log-dhcp
+```
+
+Then, enable the DHCP server service
 ```sh
-sudo apt-get install isc-kea-dhcp4
+sudo systemctl enable dnsmasq --now
 ```
 
-Now, remove the example file:
+This sets up a very simple DHCP server that will give the IP address `192.168.0.3` to the SNAP.
+Unfortunately, the folks who set up the networking interface for the SNAP only provide a DHCP interface and a dynamic (non-observable) MAC address (for some reason).
+As such, we have to now turn on the SNAP, wait for it to try to get an IP address from `dnsmasq` so we know it's MAC, then update the `dhcp-host` line and restart the DHCP server.
 
-```sh
-sudo rm /etc/kea/kea-dhcp4.conf
+1. Power cycle the SNAP (or turn it on if it wasn't turned on yet) following the instructions in [operation](operation.md)
+2. Wait a moment and open the log of dnsmasq with `journalctl -u dnsmasq`, skip to the bottom with `G` (Shift + g)
+3. You should see a line like
+```
+Aug 16 14:39:06 grex-caltech-ovro dnsmasq-dhcp[5115]: 1085377743 DHCPDISCOVER(enp1s0f0) 00:40:bf:06:13:02 no address available
+```
+This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different).
+4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
+   For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap`
+5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
+
+After waiting a bit for the SNAP to send a new request for a DHCP lease, look at the latest logs again from journalctl. If it ends with something like
+
+```
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 DHCPREQUEST(enp1s0f0) 192.168.0.3 00:40:bf:06:13:02
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 tags: known, enp1s0f0
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 DHCPACK(enp1s0f0) 192.168.0.3 00:40:bf:06:13:02 snap
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 requested options: 1:netmask, 3:router, 28:broadcast, 6:dns-server
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 next server: 192.168.0.1
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  1 option: 53 message-type  5
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 54 server-identifier  192.168.0.1
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 51 lease-time  1h
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 58 T1  30m
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 59 T2  52m30s
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option: 28 broadcast  192.168.0.255
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option:  1 netmask  255.255.255.0
+Aug 16 14:43:02 grex-caltech-ovro dnsmasq-dhcp[6024]: 1085377743 sent size:  4 option:  3 router  192.168.0.1
 ```
 
-And replace it with a file called `kea-dhcp4.conf` with the following contents:
-
-```json
-{
-    "Dhcp4": {
-        "interfaces-config": {
-            "interfaces": [
-                "enp1s0f0"
-            ],
-            "service-sockets-max-retries": 10,
-            "service-sockets-retry-wait-time": 5000
-        },
-        "lease-database": {
-            "type": "memfile",
-            "persist": true,
-            "name": "/var/lib/kea/kea-leases4.csv",
-            "lfc-interval": 3600
-        },
-        "renew-timer": 15840,
-        "rebind-timer": 27720,
-        "valid-lifetime": 31680,
-        "subnet4": [
-            {
-                "subnet": "192.168.0.0/24",
-                "pools": [
-                    {
-                        "pool": "192.168.0.4 - 192.168.0.100"
-                    }
-                ],
-                "option-data": [
-                    {
-                        "name": "routers",
-                        "data": "192.168.0.1"
-                    }
-                ],
-                "reservations" : [
-                    {
-                        "hw-address": "00:24:1D:1B:15:12",
-                        "ip-address": "192.168.0.3"
-                    }
-                ]
-            }
-        ]
-    }
-}
-```
-This sets up a more or less standard DHCP instance, with one static allocation for the SNAP FPGA, as we're hard-coding it's MAC address in the gateware.
-
-Finally enable the DHCP server service
-
-```sh
-sudo systemctl enable isc-kea-dhcp4-server
-```
-
-And check the status to make sure everything came up ok
-
-```sh
-sudo systemctl status isc-kea-dhcp4-server
-```
-
-Finally,
-
-```sh
-sudo reboot
-```
-
-After reboot, assuming your fiber line is plugged into the box, you can check the leases by looking at
-
-```sh
-cat /var/lib/kea/kea-leases4.csv
-```
+That means the SNAP got an IP. You should now be able to `ping 192.168.0.3` to make sure it's alive.
 
 ### Advanced 10 GbE Settings
 
-Unfortunatley, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
+Unfortunately, the OS's default configuration for the 10 GbE network card is not optimized for our use-case of streaming time domain science data. As such, we need to adjust a few things.
 
-Add the following to `/etc/sysctl.conf`
+Create the file `/etc/sysctl.d/20-grex.conf` with the following contents:
 
 ```conf
 kernel.shmmax = 68719476736
@@ -227,12 +210,6 @@ Make this file executable with
 sudo chmod +x /etc/rc.local
 ```
 
-Then enable the `rc-local` service
-
-```sh
-sudo systemctl enable rc-local
-```
-
 Now create the file `/etc/systemd/system/rc-local.service` with the following contents:
 
 ```ini
@@ -250,6 +227,12 @@ Now create the file `/etc/systemd/system/rc-local.service` with the following co
 
 [Install]
  WantedBy=multi-user.target
+```
+
+Then enable the `rc-local` service
+
+```sh
+sudo systemctl enable rc-local
 ```
 
 Finally, reboot
@@ -292,7 +275,7 @@ if [ -f ~/.bashrc ]; then
 fi
 ```
 
-In here, we're also souring `~/.bashrc` so we get it over ssh.
+In here, we're also sourcing `~/.bashrc` so we get it over ssh.
 
 Finally, install the pipeline dependencies with:
 
@@ -303,7 +286,7 @@ guix install psrdada snap_bringup heimdall-astro
 ## Rust
 
 Many parts of the pipeline software are written in the Rust programming language.
-We will build be building this software from scratch, so we need to install the rust compiler and it's tooling.
+We will be building this software from scratch, so we need to install the rust compiler and its tooling.
 This is easy enough with [rustup](https://rustup.rs/)
 
 We need curl for the rustup installer, so
@@ -349,6 +332,12 @@ Then, assuming you followed all the previous steps, build the pipeline software 
 
 ```sh
 ./grex/build.sh
+```
+
+Lastly, you'll need to install the `parallel` package
+
+```sh
+sudo apt install parallel -y
 ```
 
 ## Prometheus
@@ -466,54 +455,4 @@ Now we will install the node-exporter, which gives us metrics of the computer it
 sudo apt-get install prometheus-node-exporter
 ```
 
-# Turning on the SNAP
-
-To turn on the SNAP, SSH into the Pi (password is the same as the host machine) via
-
-```sh
-ssh pi@192.168.0.2
-```
-
-Then on the pi, run
-
-```sh
-python3 pwup_snap.py
-```
-
-There also exists `pwdn_snap.py`, with an obvious purpose.
-
-# Preconfigured
-
-These steps should already be performed before we ship a box, but for completeness, here are the steps that we performed.
-
-## Valon
-
-We need to configure the valon synthesizer to act as the LO for the downconverter and the reference clock for the SNAP ADC.
-
-Use the GUI tool [here](https://valontechnology.com/5009users/5009.htm) to load [this](../assets/grex_valon.VR0) configuration file.
-Next, go to synthesizer -> write registers.
-Then, save the configuration to flash to preserve this configuration across reboots.
-
-## Switch
-
-With the box connected and powered on, create an SSH relay to the switch's configuration interface with
-
-```sh
-ssh -L 8291:192.168.88.1:8291 user@<the ip address of the server>
-```
-
-Then, using [winbox](www.mikrotik.com/download/winbox.exe) connect to localhost, 
-select `files` on the left, and upload [this config file](../assets/GReX_Switch.backup). This should trigger a reboot.
-
-## Raspberry Pi
-
-We prepared the RPi image using the standard [raspbain lite OS](https://www.raspberrypi.com/software/operating-systems/).
-As part of the initial image creation, we set the hostname to `grex-pi` and enabled password-based SSH.
-
-Using `raspi-config`, we did the following:
-- disabled the serial login shell
-- enabled the hardware serial interface
-
-Then, we disabled the hardware's radios by modifying the `config.txt` file [like so](https://raspberrytips.com/disable-wifi-raspberry-pi/).
-
-Then, we configured the Pi to have the static IP address of `192.168.0.2` by following [this](https://www.makeuseof.com/raspberry-pi-set-static-ip/)
+All done! We should now be ready to run the pipeline!
