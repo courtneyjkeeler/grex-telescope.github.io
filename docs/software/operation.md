@@ -16,7 +16,7 @@ Then on the pi create (if it doesn't already exist) a bash script called `snap.s
 #!/bin/env bash
 # Usage: ./snap.sh <on|off>
 BASE_GPIO_PATH=/sys/class/gpio
-PWR_PIN=20
+PWN_PIN=20
 if [ ! -e $BASE_GPIO_PATH/gpio$PWN_PIN ]; then
   echo "20" > $BASE_GPIO_PATH/export
 fi

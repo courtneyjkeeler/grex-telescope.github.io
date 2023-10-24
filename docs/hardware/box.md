@@ -100,9 +100,9 @@ so that they fit 4-40 hardware. For the SNAP and GPS boards which are attached
 with standoffs, the screw length to affix the board to the standoff is 3/16"
 and to affix the standoffs to the plate the length is 1/4".
 
-|           Enclosure Plate Drawing            |
-|:--------------------------------------------:|
-| ![](/../assets/Enclosure_plate_drawing.jpg)  |
+|           Enclosure Plate Drawing           |
+|:-------------------------------------------:|
+| ![](/../assets/Enclosure_plate_drawing.png) |
 
 After affixing the FEM, screw the MiniCircuits amplifiers to the SMA connectors 
 to determine how high they sit off the plate. Fill the gap with 2-56 size
