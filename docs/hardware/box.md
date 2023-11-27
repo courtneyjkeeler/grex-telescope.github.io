@@ -1,7 +1,8 @@
 # The Box
 
 Here one can find documentation re: the GReX box, including cables, 
-routing, etc.
+routing, etc. A 3D PDF is available for download [here](/../assets/THE_BOX_2023Nov27.pdf).
+The BOM is available [here](/../assets/GREX Enclosure BOM Nov_27_2023.xlsx)
 
 ## Interface Plate
 
@@ -48,10 +49,10 @@ the location of the eight screw holes. When determining the position
 of the interface plate, ensure that there is sufficient clearance space
 for the locking washer on the nipple pipe.
 
-Painting
+After making the bottom cutout, all external surfaces of the box are painted white.
 
 Affix the interface plate and conductive rubber gasket to the box with pan head cross
-screws, #8-32 5/16".
+screws, #8-32 5/16", containing a rubber O-ring.
 
 |        Interface Plate Assembly        |
 |:--------------------------------------:|
@@ -110,7 +111,7 @@ washers (should be around 3). Drill the 2-56 clearance holes for the amplifiers
 with them in place. Choose appropriate screw length, will vary if many more or less 
 than 3 washers used.
 
-If the SNAP is being inserted 'upside-down' in order to incorporate a heat sink
+<!--- If the SNAP is being inserted 'upside-down' in order to incorporate a heat sink
 between the SNAP FPGA and aluminum plate, the following drawing should be used
 instead:
 
@@ -122,12 +123,12 @@ TODO: Info on the heatsink will go here. Note on the difference in standoff heig
 with this addition.
 
 TODO: Info on thermally coupling the plate to the box will go here: 0.9 in 
-separation, possibly aluminum channel sandwiched with adhesive thermal pads.
+separation, possibly aluminum channel sandwiched with adhesive thermal pads. --->
 
 ## Enclosure Lid
 
-The lid is best drilled in the open position from the inside, so that more
-precise measurements can be made from the inner wall of the lid edge.
+<!--- The lid is best drilled in the open position from the inside, so that more
+precise measurements can be made from the inner wall of the lid edge. --->
 
 |      Enclosure Lid Drawing      |
 |:-------------------------------:|
@@ -135,8 +136,7 @@ precise measurements can be made from the inner wall of the lid edge.
 
 For the RPi and PSU, the standoffs are 4-40x1/2" hex. Screws through the boards 
 are 3/16" and screws through the lid are 1/4". The switch is secured by
-5/16" screws and is backed with a nut. The LRS-50 uses
-metric hardware 6mm in length.
+5/16" screws and is backed with a nut. The LRS-50 uses metric hardware 6mm in length.
 
 ## Fan
 
@@ -215,9 +215,10 @@ Apply lock-tite to all hardware except those with nylocks.
 Run fiber cable through the 1 in nipple pipe into the Switch. Plug pipe
 with steel wool.
 
-Screw feed to the top of the box. LNAs connect to terminals on feed, and
-SMA cables connect LNAs to POLA, POLB on interface plate. Magnetic GPS unit
-attaches to side arm, and screws into GPS port on interface plate.
+Screw feed to the top of the box using 8/32 hex screws and nuts. The LNAs 
+connect to the terminals on the feed, and  SMA cables connect the LNA outputs to 
+POLA and POLB on the interface plate. The magnetic GPS unit
+attaches to a side arm, and screws into the GPS port on the interface plate.
 
 TODO: side arm?
 
