@@ -135,8 +135,8 @@ precise measurements can be made from the inner wall of the lid edge.
 
 For the RPi and PSU, the standoffs are 4-40x1/2" hex. Screws through the boards 
 are 3/16" and screws through the lid are 1/4". The switch is secured by
-3/16" screws and is backed with a split ring washer and nut. The LRS-50 uses
-metric hardware 3mm in length.
+5/16" screws and is backed with a nut. The LRS-50 uses
+metric hardware 6mm in length.
 
 ## Fan
 
