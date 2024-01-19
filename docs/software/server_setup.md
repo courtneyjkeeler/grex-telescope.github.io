@@ -63,12 +63,14 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 In `/etc/netplan` remove any files that are currently there.
 
 Check whether you are using NetworkManager or networkd:
+
 ```
 systemctl status NetworkManager
 systemctl status systemd-networkd
 ```
 
 If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+
 ```
 sudo systemctl stop NetworkManager
 sudo systemctl disable NetworkManager
@@ -79,20 +81,20 @@ Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
 network:
-    version: 2
-    renderer: networkd
-    ethernets:
-        # Two WAN interfaces. Configure this according to your network setup
-        enp36s0f0:
-            dhcp4: true
-        enp36s0f1:
-            dhcp4: true
-        # 10 GbE connection over fiber to the box
-        enp1s0f0:
-            mtu: 9000
-            addresses:
-                - 192.168.0.1/24
-                - 192.168.88.2/24
+  version: 2
+  renderer: networkd
+  ethernets:
+    # Two WAN interfaces. Configure this according to your network setup
+    enp36s0f0:
+      dhcp4: true
+    enp36s0f1:
+      dhcp4: true
+    # 10 GbE connection over fiber to the box
+    enp1s0f0:
+      mtu: 9000
+      addresses:
+        - 192.168.0.1/24
+        - 192.168.88.2/24
 ```
 
 Then apply with
@@ -127,6 +129,7 @@ log-dhcp
 ```
 
 Then, enable the DHCP server service
+
 ```sh
 sudo systemctl enable dnsmasq --now
 ```
@@ -138,13 +141,13 @@ As such, we have to now turn on the SNAP, wait for it to try to get an IP addres
 1. Power cycle the SNAP (or turn it on if it wasn't turned on yet) following the instructions in [operation](operation.md)
 2. Wait a moment and open the log of dnsmasq with `journalctl -u dnsmasq`, skip to the bottom with `G` (Shift + g)
 3. You should see a line like
+
 ```
 Aug 16 14:39:06 grex-caltech-ovro dnsmasq-dhcp[5115]: 1085377743 DHCPDISCOVER(enp1s0f0) 00:40:bf:06:13:02 no address available
 ```
-This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different).
-4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
-   For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap`
-5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
+
+This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different). 4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
+For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap` 5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
 
 After waiting a bit for the SNAP to send a new request for a DHCP lease, look at the latest logs again from journalctl. If it ends with something like
 
@@ -181,7 +184,7 @@ net.core.optmem_max = 16777216
 vm.swappiness=1
 ```
 
-Then apply these changes with 
+Then apply these changes with
 
 ```sh
 sudo sysctl --system
@@ -265,7 +268,7 @@ guix pull
 
 This step may take a while.
 
-Create (or add to) `~/.bash_profile` 
+Create (or add to) `~/.bash_profile`
 
 ```sh
 GUIX_PROFILE="$HOME/.guix-profile"
@@ -303,7 +306,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ## Python
 
-To get out of version hell for python stuff *not* packaged with guix, we're using [Poetry](https://python-poetry.org/). To install it, we will:
+To get out of version hell for python stuff _not_ packaged with guix, we're using [Poetry](https://python-poetry.org/). To install it, we will:
 
 ```sh
 curl -sSL https://install.python-poetry.org | python3 -
@@ -342,7 +345,7 @@ sudo apt install parallel -y
 
 ## Prometheus
 
-To save data about the server (CPU usage, RAM usage, etc) and to collect monitoring metrics from various pieces of pipeline software, we use the [prometheus](https://prometheus.io/) time series database. Each server will host its own database and *push* updates to the monitoring frontend Grafana.
+To save data about the server (CPU usage, RAM usage, etc) and to collect monitoring metrics from various pieces of pipeline software, we use the [prometheus](https://prometheus.io/) time series database. Each server will host its own database and _push_ updates to the monitoring frontend Grafana.
 
 First, create a new group and user
 
@@ -389,17 +392,17 @@ Now, we configure. Open up `/etc/prometheus/prometheus.yml` and edit to contain:
 
 ```yml
 global:
-    scrape_interval: 10s
-    evaluation_interval: 10s
+  scrape_interval: 10s
+  evaluation_interval: 10s
 scrape_configs:
-    - job_name: "prometheus"
-      static_configs:
+  - job_name: "prometheus"
+    static_configs:
       - targets: ["localhost:9090", "localhost:9100", "localhost:8083"]
 remote_write:
-    - url: <grafana-url>
-      basic_auth: 
-        username: <grafana username>
-        password: <grafana api key>
+  - url: <grafana-url>
+    basic_auth:
+      username: <grafana username>
+      password: <grafana api key>
 ```
 
 If you are hooking up to our grafana instance, you will get an API key from the project, otherwise you'd create a `remote_write` section that reflects your monitoring stack.
@@ -453,6 +456,38 @@ Now we will install the node-exporter, which gives us metrics of the computer it
 
 ```sh
 sudo apt-get install prometheus-node-exporter
+```
+
+## Pi SSH
+
+One nice last thing will be to configure easy access to the Raspberry Pi's SSH. We can do that by creating a passwordless SSH key and installing it on the pi. We're going to be behind ssh anyway, and the Pi isn't public-facing, so this is a safe thing to do.
+
+On the server, generate a new ssh keypair with
+
+```sh
+ssh-keygen -t rsa
+```
+
+Then, install it on the pi with
+
+```sh
+ssh-copy-id pi@192.168.0.2
+```
+
+Finally, create an SSH config that automatically supplies the hostname and user:
+
+Create a file on the GReX server in `~/.ssh/config` with the contents
+
+```
+Host pi
+    Hostname 192.168.0.2
+    User pi
+```
+
+Now you can test the easy connection with
+
+```sh
+ssh pi
 ```
 
 All done! We should now be ready to run the pipeline!
