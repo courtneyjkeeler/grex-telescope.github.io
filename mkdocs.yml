@@ -25,6 +25,7 @@ nav:
       - "Server Setup": software/server_setup.md
       - "Box Setup": software/box.md
       - "Operation": software/operation.md
+      - "Data Processing": software/data_processing.md
   - About: about.md
 markdown_extensions:
   - admonition
