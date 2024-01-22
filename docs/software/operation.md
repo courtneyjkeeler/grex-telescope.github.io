@@ -4,7 +4,7 @@ We'll flesh out all the details on operation soon, but in the meantime here are 
 
 ## Turning on the SNAP
 
-To turn on the SNAP, SSH into the Pi (as discussed in the server setup), Then on the pi create (if it 
+To turn on the SNAP, SSH into the Pi (as discussed in the server setup), Then on the pi create (if it
 doesn't already exist) a bash script called `snap.sh` with the following:
 
 !!! warning
@@ -21,7 +21,7 @@ if [ ! -e $BASE_GPIO_PATH/gpio$PWN_PIN ]; then
 fi
 echo "out" > $BASE_GPIO_PATH/gpio$PWN_PIN/direction
 if [[ -z $1 ]];
-then 
+then
     echo "Please pass `on` or `off` as an argument"
 else
     case $1 in
@@ -75,4 +75,10 @@ Another example is perhaps you want to run a [Jupypter Hub](https://jupyter.org/
 
 ```shell
 ssh -L 8080:localhost:80 username@grex-server-address
+```
+
+Another usefull one is access to the Prometheus time-series database used for monitoring. That is active on port `9090`
+
+```shell
+ssh -L 9090:localhost:9090 username@grex-server-address
 ```
