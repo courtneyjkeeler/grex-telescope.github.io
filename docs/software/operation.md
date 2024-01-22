@@ -4,13 +4,8 @@ We'll flesh out all the details on operation soon, but in the meantime here are 
 
 ## Turning on the SNAP
 
-To turn on the SNAP, SSH into the Pi (password is the same as the host machine) via
-
-```sh
-ssh pi@192.168.0.2
-```
-
-Then on the pi create (if it doesn't already exist) a bash script called `snap.sh` with the following:
+To turn on the SNAP, SSH into the Pi (as discussed in the server setup), Then on the pi create (if it 
+doesn't already exist) a bash script called `snap.sh` with the following:
 
 !!! warning
 
