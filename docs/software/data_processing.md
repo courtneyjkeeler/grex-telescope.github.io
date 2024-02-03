@@ -70,13 +70,14 @@ A few examples:
 Calculated by taking the time-average of the sum of magnitude squared of the voltages
 
 ```python
-stokesi = (abs(voltages)**2).sum(dim="pol").mean(dim="time")
+stokesi = np.square(abs(voltages), dtype='int32').sum(dim='pol', dtype='int32').sum(dim='reim', dtype='int32')
 ```
+Note that the original voltages are in "int8" format which is not enough to store squared voltages, and thus we are converting to "int32".
 
 #### H1 Line
 
 Get the Stokes intensity around the H1 line (+/- 1 MHz) as a function a time
 
 ```python
-h1 = (abs(voltages)**2).sum(dim="pol").sel(freq=slice(1421,1419)).sum(dim="freq")
+h1 = np.square(abs(voltages), dtype='int32').sum(dim="pol", dtype='int32').sel(freq=slice(1421,1419)).sum(dim="freq", dtype='int32')
 ```
