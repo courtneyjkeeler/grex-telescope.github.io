@@ -47,14 +47,14 @@ To use the CLI program, connect the FEM to a serial port either with a USB to se
 adapter or directly to a hardware UART port (like on the Raspberry Pi).
 
 ```sh
-Usage: mnc-cli <PORT> <COMMAND>
+Usage: cli <PORT> <COMMAND>
 
 Commands:
-  monitor      Gets monitor data from the FEM
-  lna          Controls the power and calibration state of the LNA
-  good-if      Sets the IF "power good" threshold
-  attenuation  Sets the attenuation level in dB (0 to 31.5)
-  help         Print this message or the help of the given subcommand(s)
+  mon    Gets monitor data from the FEM
+  lna    Controls the power of the LNA
+  if     Sets the IF "power good" threshold
+  atten  Sets the attenuation level in dB (0 to 31.5)
+  help   Print this message or the help of the given subcommand(s)
 
 Arguments:
   <PORT>  Serial port for the FEM
@@ -67,19 +67,19 @@ Options:
 To set the power state of the LNAs, use:
 
 ```sh
-./mnc-cli lna power ch<1|2> <enabled|disabled>
+./cli <serial-port> lna ch<1|2> <enabled|disabled>
 ```
 
 To set the attenuation:
 
 ```sh
-./mnc-cli attenuation <0-31.5>
+./cli atten <0-31.5>
 ```
 
 To grab the monitor data:
 
 ```sh
-./mnc-cli monitor
+./cli mon
 ```
 
 ### Physical Interface
