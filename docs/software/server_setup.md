@@ -394,6 +394,8 @@ Now, we configure. Open up `/etc/prometheus/prometheus.yml` and edit to contain:
 global:
   scrape_interval: 10s
   evaluation_interval: 10s
+  external_labels:
+    origin_prometheus: <some unique identifer>
 scrape_configs:
   - job_name: "prometheus"
     static_configs:
