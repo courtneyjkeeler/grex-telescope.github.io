@@ -63,3 +63,31 @@ second" (PPS) ticks, which come from the GPS reciever.
 
 The Valon synthesizer has two outputs but can lock both to an external reference.
 The GPS receiver in the box provides this (10 MHz) alongside the PPS signal.
+
+## SNAP Operation
+
+### Controlling the Gateware
+
+### UDP Payloads
+
+Once the pipeline is running, the SNAP will be streaming high-speed data over UDP to the processing server. These UDP frames contain one timestep of both polarizations in 8+8 bit complex data. Additionally, the payload starts with a 64-bit header that is the number of frames since the first one. Assuming you record the time when you trigger the start of packets, you can then work out the associated timestamp of the packet using the fact that every packet arrives in a 8.192us cadence.
+
+The only "tricky" bit here is this large timestamp is a big-endian number, for which (most) modern computers are not. So, it's not bit-for-bit.
+
+The format of the payload itself has a C struct compatible layout.
+
+```
++-----------------------------------------------------------------------+
+|                Timestamp (signed 64-bit, big-endian integer)          |
++-----------------------------------------------------------------------+
+| A0000R | A0000I | A0001R | A0001I | A0002R | A0002I | A0003R | A0003I |
+|                                  ...                                  |
+| A2044R | A2044I | A2045R | A2045I | A2046R | A2046I | A2047R | A2047I |
++-----------------------------------------------------------------------+
+| B0000R | B0000I | B0001R | B0001I | B0002R | B0002I | B0003R | B0003I |
+|                                  ...                                  |
+| B2044R | B2044I | B2045R | B2045I | B2046R | B2046I | B2047R | B2047I |
++-----------------------------------------------------------------------+
+```
+
+Where `XnnnnR` + `XnnnnI`\*j is the complex voltage data of polarization `X` (either A or B), channel `nnnn` where 0000 is 1530 MHz and `2047` is 1280 MHz. The components are signed bytes.
