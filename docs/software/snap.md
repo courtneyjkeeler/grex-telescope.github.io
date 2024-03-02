@@ -7,7 +7,7 @@ FPGA to perform the digitization and F-engine components of the system.
 
 The setup and configuration of this board has seemingly never been well
 documented, so we'll try to make it as painless as possible here.
-
+c
 The FPGA Simulink model is stored
 [here](https://github.com/GReX-Telescope/gateware) with the latest releases
 found [here](https://github.com/GReX-Telescope/gateware/releases). Grab the

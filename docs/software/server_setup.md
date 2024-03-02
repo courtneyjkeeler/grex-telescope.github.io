@@ -271,8 +271,7 @@ Finally, add the following to `~/.bashrc` to let our use use CUDA
 ```sh
 # CUDA 12.3
 export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}
-export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64\
-                         ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3/lib64
 ```
 
 and `source ~/.bashrc` or relog.
@@ -320,7 +319,7 @@ We have to add the latter to out linker path, by adding the following to `~./bas
 
 ```sh
 # PSRDADA
-export LD_LIBRARY_PATH=/usr/local/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
 
 Then, relog once agian.
