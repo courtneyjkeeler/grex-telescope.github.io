@@ -240,51 +240,175 @@ sudo systemctl enable rc-local
 
 Finally, reboot
 
-## Guix
+## GPU Drivers / CUDA
 
-We use the deterministic pacakge manager Guix to deal with the more tricky to install things, so we never have to worry about stuff not building.
-
-You can install this with the Ubuntu package manager
+Heimdall (the pulse detection part of our pipeline) relies on the CUDA toolkit. Let's install that now (version 12.3)
 
 ```sh
-sudo apt-get install guix
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get -y install cuda-toolkit-12-3
 ```
 
-Then, we will add the repository of our pacakges by creating the following file `~/.config/guix/channels.scm`
-
-```lisp
-(cons (channel
-        (name 'guix-grex)
-        (url "https://github.com/GReX-Telescope/guix-grex.git")
-        (branch "main"))
-      %default-channels)
-```
-
-And then have it self-update with
+And then install the open-source kernel drivers (Version 545) (overwriting previously installed ones)
 
 ```sh
-guix pull
+sudo apt-get install -y nvidia-kernel-open-545
+sudo apt-get install -y cuda-drivers-545
 ```
 
-This step may take a while.
-
-Create (or add to) `~/.bash_profile`
+You may want to run the following to cleanup old dependencies/driver versions that may have been preinstalled
 
 ```sh
-GUIX_PROFILE="$HOME/.guix-profile"
-. "$GUIX_PROFILE/etc/profile"
-if [ -f ~/.bashrc ]; then
-    source ~/.bashrc
-fi
+sudo apt-get autoremove
 ```
 
-In here, we're also sourcing `~/.bashrc` so we get it over ssh.
+Reboot. Then run `nvidia-smi` to see if the CUDA version and Driver version came up correctly.
 
-Finally, install the pipeline dependencies with:
+Finally, add the following to `~/.bashrc` to let our use use CUDA
 
 ```sh
-guix install psrdada snap_bringup heimdall-astro
+# CUDA 12.3
+export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64\
+                         ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 ```
+
+and `source ~/.bashrc` or relog.
+
+!!! warning
+
+    If you change CUDA versions, you'll need to update these paths!
+
+## Pipeline Dependencies
+
+### PSRDADA
+
+We use [PSRDADA](https://psrdada.sourceforge.net/) to connect the packet capture and first stage processing pipeline [T0](https://github.com/GReX-Telescope/GReX-T0) to the pulse detection framework [heimdall](https://sourceforge.net/p/heimdall-astro/wiki/Home/). This is a library we need to install.
+
+We will build a few programs, so might as well create a directory to do this in to keep our home directory organized.
+
+```sh
+mkdir src && cd src
+```
+
+Then clone our fork of PSRDADA
+
+```sh
+git clone https://github.com/GReX-Telescope/psrdada && cd psrdada
+```
+
+Now, install some build dependencies
+
+```sh
+sudo apt-get install build-essential cmake -y
+```
+
+Then, build PSRDADA
+
+```sh
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+```
+
+This will install the control programs and libraries to `/usr/local/bin` and `/usr/local/lib`, respectively.
+
+We have to add the latter to out linker path, by adding the following to `~./bashrc`
+
+```sh
+# PSRDADA
+export LD_LIBRARY_PATH=/usr/local/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+```
+
+Then, relog once agian.
+
+### Heimdall
+
+Similar process to build the pulse-detection software, heimdall.
+First, clone our fork in our `~/src` directory:
+
+```sh
+git clone --recurse-submodules  https://github.com/GReX-Telescope/heimdall-astro
+cd heimdall-astro
+```
+
+Install some build dependencies
+
+```sh
+sudo apt-get install libboost-all-dev -y
+```
+
+Then build
+
+```sh
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+Run the test dedispersion program to make sure everything seemed to work
+
+```sh
+./dedisp/testdedisp
+```
+
+which should return
+
+```
+----------------------------- INPUT DATA ---------------------------------
+Frequency of highest chanel (MHz)            : 1581.0000
+Bandwidth (MHz)                              : 100.00
+NCHANS (Channel Width [MHz])                 : 1024 (-0.097656)
+Sample time (after downsampling by 1)        : 0.000250
+Observation duration (s)                     : 30.000000 (119999 samples)
+Data RMS ( 8 bit input data)                 : 25.000000
+Input data array size                        : 468 MB
+
+Embedding signal
+----------------------------- INJECTED SIGNAL  ----------------------------
+Pulse time at f0 (s)                      : 3.141590 (sample 12566)
+Pulse DM (pc/cm^3)                        : 41.159000
+Signal Delays : 0.000000, 0.000008, 0.000017 ... 0.009530
+Rawdata Mean (includes signal)    : -0.002202
+Rawdata StdDev (includes signal)  : 25.001451
+Pulse S/N (per frequency channel) : 1.000000
+Quantizing array
+Quantized data Mean (includes signal)    : 127.497818
+Quantized data StdDev (includes signal)  : 25.003092
+
+Init GPU
+Create plan
+Gen DM list
+----------------------------- DM COMPUTATIONS  ----------------------------
+Computing 32 DMs from 2.000000 to 102.661667 pc/cm^3
+Max DM delay is 95 samples (0 seconds)
+Computing 119904 out of 119999 total samples (99.92% efficiency)
+Output data array size : 14 MB
+
+Compute on GPU
+Dedispersion took 0.02 seconds
+Output RMS                               : 0.376464
+Output StdDev                            : 0.002307
+DM trial 11 (37.681 pc/cm^3), Samp 12566 (3.141500 s): 0.390678 (6.16 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12567 (3.141750 s): 0.398160 (9.41 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12568 (3.142000 s): 0.393198 (7.25 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12569 (3.142250 s): 0.391713 (6.61 sigma)
+DM trial 12 (40.926 pc/cm^3), Samp 12566 (3.141500 s): 0.441719 (28.29 sigma)
+DM trial 13 (44.171 pc/cm^3), Samp 12564 (3.141000 s): 0.400574 (10.45 sigma)
+DM trial 13 (44.171 pc/cm^3), Samp 12565 (3.141250 s): 0.403097 (11.55 sigma)
+Dedispersion successful.
+```
+
+Finally, install this into our path with
+
+```sh
+sudo make install
+```
+
+The `heimdall` executable should now be available for the pipeline as well as offline analysis.
 
 ## Rust
 
@@ -306,7 +430,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ## Python
 
-To get out of version hell for python stuff _not_ packaged with guix, we're using [Poetry](https://python-poetry.org/). To install it, we will:
+To get out of version hell for python stuff, we're using [Poetry](https://python-poetry.org/). To install it, we will:
 
 ```sh
 curl -sSL https://install.python-poetry.org | python3 -
