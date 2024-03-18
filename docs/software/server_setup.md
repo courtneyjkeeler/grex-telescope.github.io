@@ -292,25 +292,27 @@ We will build a few programs, so might as well create a directory to do this in 
 mkdir src && cd src
 ```
 
-Then clone our fork of PSRDADA
+Then clone PSRDADA
 
 ```sh
-git clone https://github.com/GReX-Telescope/psrdada && cd psrdada
+git clone git://git.code.sf.net/p/psrdada/code psrdada && cd psrdada
+# Last tested version, bump as appropriate
+git checkout 008afa7
 ```
 
 Now, install some build dependencies
 
 ```sh
-sudo apt-get install build-essential cmake -y
+sudo apt-get install build-essential cmake ninja-build -y
 ```
 
 Then, build PSRDADA
 
 ```sh
 mkdir build && cd build
-cmake ..
-make -j$(nproc)
-sudo make install
+cmake -GNinja ..
+ninja
+sudo ninja install
 ```
 
 This will install the control programs and libraries to `/usr/local/bin` and `/usr/local/lib`, respectively.
@@ -344,8 +346,8 @@ Then build
 
 ```sh
 mkdir build && cd build
-cmake ..
-make -j$(nproc)
+cmake -GNinja ..
+ninja
 ```
 
 Run the test dedispersion program to make sure everything seemed to work
@@ -404,10 +406,20 @@ Dedispersion successful.
 Finally, install this into our path with
 
 ```sh
-sudo make install
+sudo ninja install
 ```
 
 The `heimdall` executable should now be available for the pipeline as well as offline analysis.
+
+### HDF5/NetCDF
+
+We use the fantastic [netcdf](https://www.unidata.ucar.edu/software/netcdf/) library to write out voltage
+data. To do this, we need to statically link netcdf (and it's dependent HDF5) at compile time. As such, we
+have to install these libraries systemw-wide.
+
+```sh
+sudo apt-get install libhdf5-dev libnetcdf-dev -y
+```
 
 ## Rust
 
