@@ -10,17 +10,17 @@ variables on each dimension to remove any ambiguity as to which coordinate each 
 Using the NetCDF binaries, we can quickly introspect a voltage dump to see how it is laid out
 
 ```shell
-user@grex:/hdd/data/voltages$ ncdump -h grex_dump-20240122T055935.nc
-netcdf grex_dump-20240122T055935 {
+user@grex:/hdd/data/voltages$ ncdump -h grex_dump-20240319T182522.nc
+netcdf grex_dump-20240319T182522 {
 dimensions:
-        time = 524288 ;
+        time = 1048576 ;
         pol = 2 ;
         freq = 2048 ;
         reim = 2 ;
 variables:
         double time(time) ;
                 time:units = "Days" ;
-                time:long_name = "Dynamic Barycentric Time (TDB) since J2000" ;
+                time:long_name = "TAI days since the MJD Epoch" ;
         string pol(pol) ;
                 pol:long_name = "Polarization" ;
         double freq(freq) ;
@@ -72,6 +72,7 @@ Calculated by taking the time-average of the sum of magnitude squared of the vol
 ```python
 stokesi = np.square(abs(voltages), dtype='int32').sum(dim='pol', dtype='int32').sum(dim='reim', dtype='int32')
 ```
+
 Note that the original voltages are in "int8" format which is not enough to store squared voltages, and thus we are converting to "int32".
 
 #### H1 Line
