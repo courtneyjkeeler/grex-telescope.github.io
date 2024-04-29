@@ -13,7 +13,7 @@ Additionally, this module provides rudimentary monitor and control support.
 The hardware design itself is implemented in the free [KiCAD](https://www.kicad.org/)
 program and is available [here](https://github.com/GReX-Telescope/FrontendModule).
 The current hardware uses ENIG to help reflow of the fine-pitch components.
-Additionally, it utilizes the low-loss RO4003C substrate in a custom 4-layer stackup. 
+Additionally, it utilizes the low-loss RO4003C substrate in a custom 4-layer stackup.
 
 - Schematics
 - BOM
@@ -38,23 +38,24 @@ controlling.
 With this software, there is control for enabling/disabling the LNA bias and
 setting the interstage IF attenuator. For the digital attenuator,
 we can set attenuation (and therefore change the total gain) from 0 dB to 31.5 dB.
-This attenuator is used to maximize the dynamic range of the ADC and can be set 
+This attenuator is used to maximize the dynamic range of the ADC and can be set
 for environmental RFI levels.
 
-### CLI Example
+### CLI
 
 To use the CLI program, connect the FEM to a serial port either with a USB to serial
-adapter or directly to a hardware UART port (like on the Raspberry Pi).
+adapter or directly to a hardware UART port (like on the Raspberry Pi). If the pi doesn't
+have the cli program already copied over, it can be found [here](../assets/cli).
 
 ```sh
-Usage: mnc-cli <PORT> <COMMAND>
+Usage: cli <PORT> <COMMAND>
 
 Commands:
-  monitor      Gets monitor data from the FEM
-  lna          Controls the power and calibration state of the LNA
-  good-if      Sets the IF "power good" threshold
-  attenuation  Sets the attenuation level in dB (0 to 31.5)
-  help         Print this message or the help of the given subcommand(s)
+  mon    Gets monitor data from the FEM
+  lna    Controls the power of the LNA
+  if     Sets the IF "power good" threshold
+  atten  Sets the attenuation level in dB (0 to 31.5)
+  help   Print this message or the help of the given subcommand(s)
 
 Arguments:
   <PORT>  Serial port for the FEM
@@ -67,19 +68,19 @@ Options:
 To set the power state of the LNAs, use:
 
 ```sh
-./mnc-cli lna power ch<1|2> <enabled|disabled>
+./cli <serial-port> lna ch<1|2> <enabled|disabled>
 ```
 
 To set the attenuation:
 
 ```sh
-./mnc-cli attenuation <0-31.5>
+./cli atten <0-31.5>
 ```
 
 To grab the monitor data:
 
 ```sh
-./mnc-cli monitor
+./cli mon
 ```
 
 ### Physical Interface

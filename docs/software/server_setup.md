@@ -63,12 +63,14 @@ The 10 GbE fiber port serves a few purposes. It is the main data transfer link b
 In `/etc/netplan` remove any files that are currently there.
 
 Check whether you are using NetworkManager or networkd:
+
 ```
 systemctl status NetworkManager
 systemctl status systemd-networkd
 ```
 
 If NetworkManager is running and networkd is not, disable NetworkManager and enable networkd. (Otherwise, skip this step.)
+
 ```
 sudo systemctl stop NetworkManager
 sudo systemctl disable NetworkManager
@@ -79,20 +81,20 @@ Then, create a new file called `config.yaml` with the following contents
 
 ```yaml
 network:
-    version: 2
-    renderer: networkd
-    ethernets:
-        # Two WAN interfaces. Configure this according to your network setup
-        enp36s0f0:
-            dhcp4: true
-        enp36s0f1:
-            dhcp4: true
-        # 10 GbE connection over fiber to the box
-        enp1s0f0:
-            mtu: 9000
-            addresses:
-                - 192.168.0.1/24
-                - 192.168.88.2/24
+  version: 2
+  renderer: networkd
+  ethernets:
+    # Two WAN interfaces. Configure this according to your network setup
+    enp36s0f0:
+      dhcp4: true
+    enp36s0f1:
+      dhcp4: true
+    # 10 GbE connection over fiber to the box
+    enp1s0f0:
+      mtu: 9000
+      addresses:
+        - 192.168.0.1/24
+        - 192.168.88.2/24
 ```
 
 Then apply with
@@ -127,6 +129,7 @@ log-dhcp
 ```
 
 Then, enable the DHCP server service
+
 ```sh
 sudo systemctl enable dnsmasq --now
 ```
@@ -138,13 +141,13 @@ As such, we have to now turn on the SNAP, wait for it to try to get an IP addres
 1. Power cycle the SNAP (or turn it on if it wasn't turned on yet) following the instructions in [operation](operation.md)
 2. Wait a moment and open the log of dnsmasq with `journalctl -u dnsmasq`, skip to the bottom with `G` (Shift + g)
 3. You should see a line like
+
 ```
 Aug 16 14:39:06 grex-caltech-ovro dnsmasq-dhcp[5115]: 1085377743 DHCPDISCOVER(enp1s0f0) 00:40:bf:06:13:02 no address available
 ```
-This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different).
-4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
-   For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap`
-5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
+
+This implies the SNAP has a MAC address of `00:40:bf:06:13:02` (yours will be different). 4. Go back and uncomment and edit the `dhcp-host` line of `/etc/dnsmasq.conf` to contain this MAC.
+For example, in this case we would put `dhcp-host=00:40:bf:06:13:02,192.168.0.3,snap` 5. Finally, restart the dhcp server with `sudo systemctl restart dnsmasq`
 
 After waiting a bit for the SNAP to send a new request for a DHCP lease, look at the latest logs again from journalctl. If it ends with something like
 
@@ -181,7 +184,7 @@ net.core.optmem_max = 16777216
 vm.swappiness=1
 ```
 
-Then apply these changes with 
+Then apply these changes with
 
 ```sh
 sudo sysctl --system
@@ -237,50 +240,185 @@ sudo systemctl enable rc-local
 
 Finally, reboot
 
-## Guix
+## GPU Drivers / CUDA
 
-We use the deterministic pacakge manager Guix to deal with the more tricky to install things, so we never have to worry about stuff not building.
-
-You can install this with the Ubuntu package manager
+Heimdall (the pulse detection part of our pipeline) relies on the CUDA toolkit. Let's install that now (version 12.3)
 
 ```sh
-sudo apt-get install guix
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get -y install cuda-toolkit-12-3
 ```
 
-Then, we will add the repository of our pacakges by creating the following file `~/.config/guix/channels.scm`
-
-```lisp
-(cons (channel
-        (name 'guix-grex)
-        (url "https://github.com/GReX-Telescope/guix-grex.git")
-        (branch "main"))
-      %default-channels)
-```
-
-And then have it self-update with
+And then install the open-source kernel drivers (Version 545) (overwriting previously installed ones)
 
 ```sh
-guix pull
+sudo apt-get install -y nvidia-kernel-open-545
+sudo apt-get install -y cuda-drivers-545
 ```
 
-This step may take a while.
-
-Create (or add to) `~/.bash_profile` 
+You may want to run the following to cleanup old dependencies/driver versions that may have been preinstalled
 
 ```sh
-GUIX_PROFILE="$HOME/.guix-profile"
-. "$GUIX_PROFILE/etc/profile"
-if [ -f ~/.bashrc ]; then
-    source ~/.bashrc
-fi
+sudo apt-get autoremove
 ```
 
-In here, we're also sourcing `~/.bashrc` so we get it over ssh.
+Reboot. Then run `nvidia-smi` to see if the CUDA version and Driver version came up correctly.
 
-Finally, install the pipeline dependencies with:
+Finally, add the following to `~/.bashrc` to let our use use CUDA
 
 ```sh
-guix install psrdada snap_bringup heimdall-astro
+# CUDA 12.3
+export PATH=/usr/local/cuda-12.3/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3/lib64
+```
+
+and `source ~/.bashrc` or relog.
+
+!!! warning
+
+    If you change CUDA versions, you'll need to update these paths!
+
+## Pipeline Dependencies
+
+### PSRDADA
+
+We use [PSRDADA](https://psrdada.sourceforge.net/) to connect the packet capture and first stage processing pipeline [T0](https://github.com/GReX-Telescope/GReX-T0) to the pulse detection framework [heimdall](https://sourceforge.net/p/heimdall-astro/wiki/Home/). This is a library we need to install.
+
+We will build a few programs, so might as well create a directory to do this in to keep our home directory organized.
+
+```sh
+mkdir src && cd src
+```
+
+Then clone PSRDADA
+
+```sh
+git clone git://git.code.sf.net/p/psrdada/code psrdada && cd psrdada
+# Last tested version, bump as appropriate
+git checkout 008afa7
+```
+
+Now, install some build dependencies
+
+```sh
+sudo apt-get install build-essential cmake ninja-build -y
+```
+
+Then, build PSRDADA
+
+```sh
+mkdir build && cd build
+cmake -GNinja ..
+ninja
+sudo ninja install
+```
+
+This will install the control programs and libraries to `/usr/local/bin` and `/usr/local/lib`, respectively.
+
+We have to add the latter to out linker path, by adding the following to `~./bashrc`
+
+```sh
+# PSRDADA
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+```
+
+Then, relog once agian.
+
+### Heimdall
+
+Similar process to build the pulse-detection software, heimdall.
+First, clone our fork in our `~/src` directory:
+
+```sh
+git clone --recurse-submodules  https://github.com/GReX-Telescope/heimdall-astro
+cd heimdall-astro
+```
+
+Install some build dependencies
+
+```sh
+sudo apt-get install libboost-all-dev -y
+```
+
+Then build
+
+```sh
+mkdir build && cd build
+cmake -GNinja ..
+ninja
+```
+
+Run the test dedispersion program to make sure everything seemed to work
+
+```sh
+./dedisp/testdedisp
+```
+
+which should return
+
+```
+----------------------------- INPUT DATA ---------------------------------
+Frequency of highest chanel (MHz)            : 1581.0000
+Bandwidth (MHz)                              : 100.00
+NCHANS (Channel Width [MHz])                 : 1024 (-0.097656)
+Sample time (after downsampling by 1)        : 0.000250
+Observation duration (s)                     : 30.000000 (119999 samples)
+Data RMS ( 8 bit input data)                 : 25.000000
+Input data array size                        : 468 MB
+
+Embedding signal
+----------------------------- INJECTED SIGNAL  ----------------------------
+Pulse time at f0 (s)                      : 3.141590 (sample 12566)
+Pulse DM (pc/cm^3)                        : 41.159000
+Signal Delays : 0.000000, 0.000008, 0.000017 ... 0.009530
+Rawdata Mean (includes signal)    : -0.002202
+Rawdata StdDev (includes signal)  : 25.001451
+Pulse S/N (per frequency channel) : 1.000000
+Quantizing array
+Quantized data Mean (includes signal)    : 127.497818
+Quantized data StdDev (includes signal)  : 25.003092
+
+Init GPU
+Create plan
+Gen DM list
+----------------------------- DM COMPUTATIONS  ----------------------------
+Computing 32 DMs from 2.000000 to 102.661667 pc/cm^3
+Max DM delay is 95 samples (0 seconds)
+Computing 119904 out of 119999 total samples (99.92% efficiency)
+Output data array size : 14 MB
+
+Compute on GPU
+Dedispersion took 0.02 seconds
+Output RMS                               : 0.376464
+Output StdDev                            : 0.002307
+DM trial 11 (37.681 pc/cm^3), Samp 12566 (3.141500 s): 0.390678 (6.16 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12567 (3.141750 s): 0.398160 (9.41 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12568 (3.142000 s): 0.393198 (7.25 sigma)
+DM trial 11 (37.681 pc/cm^3), Samp 12569 (3.142250 s): 0.391713 (6.61 sigma)
+DM trial 12 (40.926 pc/cm^3), Samp 12566 (3.141500 s): 0.441719 (28.29 sigma)
+DM trial 13 (44.171 pc/cm^3), Samp 12564 (3.141000 s): 0.400574 (10.45 sigma)
+DM trial 13 (44.171 pc/cm^3), Samp 12565 (3.141250 s): 0.403097 (11.55 sigma)
+Dedispersion successful.
+```
+
+Finally, install this into our path with
+
+```sh
+sudo ninja install
+```
+
+The `heimdall` executable should now be available for the pipeline as well as offline analysis.
+
+### HDF5/NetCDF
+
+We use the fantastic [netcdf](https://www.unidata.ucar.edu/software/netcdf/) library to write out voltage
+data. To do this, we need to statically link netcdf (and it's dependent HDF5) at compile time. As such, we
+have to install these libraries systemw-wide.
+
+```sh
+sudo apt-get install libhdf5-dev libnetcdf-dev -y
 ```
 
 ## Rust
@@ -303,7 +441,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ## Python
 
-To get out of version hell for python stuff *not* packaged with guix, we're using [Poetry](https://python-poetry.org/). To install it, we will:
+To get out of version hell for python stuff, we're using [Poetry](https://python-poetry.org/). To install it, we will:
 
 ```sh
 curl -sSL https://install.python-poetry.org | python3 -
@@ -342,7 +480,7 @@ sudo apt install parallel -y
 
 ## Prometheus
 
-To save data about the server (CPU usage, RAM usage, etc) and to collect monitoring metrics from various pieces of pipeline software, we use the [prometheus](https://prometheus.io/) time series database. Each server will host its own database and *push* updates to the monitoring frontend Grafana.
+To save data about the server (CPU usage, RAM usage, etc) and to collect monitoring metrics from various pieces of pipeline software, we use the [prometheus](https://prometheus.io/) time series database. Each server will host its own database and _push_ updates to the monitoring frontend Grafana.
 
 First, create a new group and user
 
@@ -389,17 +527,19 @@ Now, we configure. Open up `/etc/prometheus/prometheus.yml` and edit to contain:
 
 ```yml
 global:
-    scrape_interval: 10s
-    evaluation_interval: 10s
+  scrape_interval: 10s
+  evaluation_interval: 10s
+  external_labels:
+    origin_prometheus: <some unique identifer>
 scrape_configs:
-    - job_name: "prometheus"
-      static_configs:
+  - job_name: "prometheus"
+    static_configs:
       - targets: ["localhost:9090", "localhost:9100", "localhost:8083"]
 remote_write:
-    - url: <grafana-url>
-      basic_auth: 
-        username: <grafana username>
-        password: <grafana api key>
+  - url: <grafana-url>
+    basic_auth:
+      username: <grafana username>
+      password: <grafana api key>
 ```
 
 If you are hooking up to our grafana instance, you will get an API key from the project, otherwise you'd create a `remote_write` section that reflects your monitoring stack.
@@ -453,6 +593,38 @@ Now we will install the node-exporter, which gives us metrics of the computer it
 
 ```sh
 sudo apt-get install prometheus-node-exporter
+```
+
+## Pi SSH
+
+One nice last thing will be to configure easy access to the Raspberry Pi's SSH. We can do that by creating a passwordless SSH key and installing it on the pi. We're going to be behind ssh anyway, and the Pi isn't public-facing, so this is a safe thing to do.
+
+On the server, generate a new ssh keypair with
+
+```sh
+ssh-keygen -t rsa
+```
+
+Then, install it on the pi with
+
+```sh
+ssh-copy-id pi@192.168.0.2
+```
+
+Finally, create an SSH config that automatically supplies the hostname and user:
+
+Create a file on the GReX server in `~/.ssh/config` with the contents
+
+```
+Host pi
+    Hostname 192.168.0.2
+    User pi
+```
+
+Now you can test the easy connection with
+
+```sh
+ssh pi
 ```
 
 All done! We should now be ready to run the pipeline!

@@ -1,16 +1,15 @@
-# Operation Details
+# Operation
 
 We'll flesh out all the details on operation soon, but in the meantime here are the critical details.
 
 ## Turning on the SNAP
 
-To turn on the SNAP, SSH into the Pi (password is the same as the host machine) via
+To turn on the SNAP, SSH into the Pi (as discussed in the server setup), Then on the pi create (if it
+doesn't already exist) a bash script called `snap.sh` with the following:
 
-```sh
-ssh pi@192.168.0.2
-```
+!!! warning
 
-Then on the pi create (if it doesn't already exist) a bash script called `snap.sh` with the following:
+    This is assuming you have a V2 power supply, ON and OFF are reversed otherwise
 
 ```bash
 #!/bin/env bash
@@ -22,15 +21,15 @@ if [ ! -e $BASE_GPIO_PATH/gpio$PWN_PIN ]; then
 fi
 echo "out" > $BASE_GPIO_PATH/gpio$PWN_PIN/direction
 if [[ -z $1 ]];
-then 
+then
     echo "Please pass `on` or `off` as an argument"
 else
     case $1 in
     "on" | "ON")
-    echo "1" > $BASE_GPIO_PATH/gpio$PWN_PIN/value
+    echo "0" > $BASE_GPIO_PATH/gpio$PWN_PIN/value
     ;;
     "off" | "OFF")
-    echo "0" > $BASE_GPIO_PATH/gpio$PWN_PIN/value
+    echo "1" > $BASE_GPIO_PATH/gpio$PWN_PIN/value
     ;;
     *)
     echo "Please pass `on` or `off` as an argument"
@@ -57,7 +56,29 @@ Normally, T2 will send triggers to T0 to dump the voltage ringbuffer to disk. Yo
 echo " " > /dev/udp/localhost/65432
 ```
 
-### Voltage Dump Format
+## SSH Port Tunneling
 
-The voltage dumps you get are written as HDF5 files. It contains a single tensor of complex voltage data from both polarizations. Additionally, there is a timestamp attribute on the data, as MJD Days (UTC). This timestamp is for the first sample in the time axis.
+In some circumstances, it may be usefull to access ports on the GReX server on your local computer remotely. We can accomplish this using [SSH Tunneling](https://www.ssh.com/academy/ssh/tunneling-example).
 
+One example of why we might want to do this is to access the 10 GbE switch configuration that is located in the
+far-side GReX box. It runs a normal web page on a static ip of `192.168.88.1`. You can access this from a web
+browser if you are sitting at the GReX server, but not remotely.
+
+To access it using SSH tunneling, we can forward that IP's port 80 (standard HTTP) to our local computer at some
+unused, non-privaleged port.
+
+```shell
+ssh -L 8080:192.168.88.1:80 username@grex-server-address
+```
+
+Another example is perhaps you want to run a [Jupypter Hub](https://jupyter.org/hub) instance on the GReX server. In that case, the website it is hosting is on the server itself, so you would run:
+
+```shell
+ssh -L 8080:localhost:80 username@grex-server-address
+```
+
+Another usefull one is access to the Prometheus time-series database used for monitoring. That is active on port `9090`
+
+```shell
+ssh -L 9090:localhost:9090 username@grex-server-address
+```
