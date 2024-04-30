@@ -1,7 +1,9 @@
 # The Box
 
 Here one can find documentation re: the GReX box, including cables, 
-routing, etc. A 3D PDF is available for download [here](/../assets/THE_BOX_2023Nov27.PDF).
+routing, etc. A 3D PDF is available for download [here](/../assets/THE_BOX_2023Nov27.PDF). If you have trouble
+viewing the PDF, download and open the file with Acrobat Reader, if prompted 'Trust' the document, and enable 3D
+content. Click anywhere on the page to load the 3D content.
 The BOM is available [here](/../assets/GReX_Enclosure_BOM.pdf)
 
 ## Interface Plate
@@ -11,7 +13,7 @@ measuring approximately 12x3x1/8 inches. The drilled hole specifications are sho
 
 |        Interface Plate Drawing        |
 |:-------------------------------------:|
-| ![](/../assets/End_Plate_Drawing.jpg) |
+| ![](/../assets/End_Plate_drawing.jpg) |
 
 <details>
 <summary>Tips for machining</summary>
@@ -97,7 +99,7 @@ locking washer of the 1in nipple pipe.
 The steel plate that comes provided with the enclosure box is discarded and
 replaced instead with an aluminum plate. Use a step drill for the four corner
 post holes. Drill the chassis holes on the bottom layer of the FEM assembly
-so that they fit 4-40 hardware. For the SNAP and GPS boards which are attached 
+so that they fit 4-40x5/16 hardware. For the SNAP and GPS boards which are attached 
 with standoffs, the screw length to affix the board to the standoff is 3/16"
 and to affix the standoffs to the plate the length is 1/4".
 
